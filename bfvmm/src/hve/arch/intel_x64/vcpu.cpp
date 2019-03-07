@@ -327,6 +327,82 @@ vcpu::write_guest_state()
     guest_ia32_sysenter_cs::set(msrs::ia32_sysenter_cs::get());
     guest_ia32_sysenter_esp::set(msrs::ia32_sysenter_esp::get());
     guest_ia32_sysenter_eip::set(msrs::ia32_sysenter_eip::get());
+
+    bfdebug_transaction(1, [&](std::string * msg) {
+            bfdebug_info(1, "guest state", msg);
+
+            bfdebug_subnhex(1, "es",  es::get(), msg);
+            bfdebug_subnhex(1, "cs",  cs::get(), msg);
+            bfdebug_subnhex(1, "ss",  ss::get(), msg);
+            bfdebug_subnhex(1, "ds",  ds::get(), msg);
+            bfdebug_subnhex(1, "fs",  fs::get(), msg);
+            bfdebug_subnhex(1, "gs",  gs::get(), msg);
+	
+ 	    bfdebug_subnhex(1, "ldtr",  ldtr::get(), msg);
+            bfdebug_subnhex(1, "tr",  tr::get(), msg);
+	
+	    bfdebug_subnhex(1, "msrs::ia32_debugctl",  msrs::ia32_debugctl::get(), msg);
+            bfdebug_subnhex(1, "::x64::msrs::ia32_pat",  ::x64::msrs::ia32_pat::get(), msg);
+	    bfdebug_subnhex(1, "msrs::ia32_efer",  msrs::ia32_efer::get(), msg);
+    });
+
+
+    if (arch_perf_monitoring::eax::version_id::get() >= 2) {
+    	bfdebug_transaction(1, [&](std::string * msg) {
+            bfdebug_subnhex(1, "msrs::ia32_perf_global_ctrl",  msrs::ia32_perf_global_ctrl::get(), msg);
+        });
+    }
+
+    bfdebug_transaction(1, [&](std::string * msg) {
+            bfdebug_subnhex(1, "guest_gdt.limit",  guest_gdt.limit(), msg);
+            bfdebug_subnhex(1, "guest_idt.limit",  guest_idt.limit(), msg);
+            bfdebug_subnhex(1, "guest_gdt.base",  guest_gdt.base(), msg);
+            bfdebug_subnhex(1, "guest_idt.base",  guest_idt.base(), msg);
+
+            bfdebug_subnhex(1, "es limit",  es_index != 0 ? guest_gdt.limit(es_index) : 0, msg);
+            bfdebug_subnhex(1, "cs limit",  cs_index != 0 ? guest_gdt.limit(cs_index) : 0, msg);
+            bfdebug_subnhex(1, "ss limit",  ss_index != 0 ? guest_gdt.limit(ss_index) : 0, msg);
+            bfdebug_subnhex(1, "ds limit",  ds_index != 0 ? guest_gdt.limit(ds_index) : 0, msg);
+            bfdebug_subnhex(1, "fs limit",  fs_index != 0 ? guest_gdt.limit(fs_index) : 0, msg);
+            bfdebug_subnhex(1, "gs limit",  es_index != 0 ? guest_gdt.limit(gs_index) : 0, msg);
+            bfdebug_subnhex(1, "ldtr limit",  ldtr_index != 0 ? guest_gdt.limit(ldtr_index) : 0, msg);
+            bfdebug_subnhex(1, "tr limit",  tr_index != 0 ? guest_gdt.limit(tr_index) : 0, msg);
+
+            bfdebug_subnhex(1, "es access rights",  es_index != 0 ? guest_gdt.access_rights(es_index) : unusable, msg);
+            bfdebug_subnhex(1, "cs access rights",  cs_index != 0 ? guest_gdt.access_rights(cs_index) : unusable, msg);
+            bfdebug_subnhex(1, "ss access rights",  ss_index != 0 ? guest_gdt.access_rights(ss_index) : unusable, msg);
+            bfdebug_subnhex(1, "ds access rights",  ds_index != 0 ? guest_gdt.access_rights(ds_index) : unusable, msg);
+            bfdebug_subnhex(1, "fs access rights",  fs_index != 0 ? guest_gdt.access_rights(fs_index) : unusable, msg);
+            bfdebug_subnhex(1, "gs access rights",  gs_index != 0 ? guest_gdt.access_rights(gs_index) : unusable, msg);
+            bfdebug_subnhex(1, "ldtr access rights",  ldtr_index != 0 ? guest_gdt.access_rights(ldtr_index) : unusable, msg);
+            bfdebug_subnhex(1, "tr access rights",  tr_index != 0 ? guest_gdt.access_rights(tr_index) : type::tss_busy | 0x80U, msg);
+
+            bfdebug_subnhex(1, "es base",  es_index != 0 ? guest_gdt.base(es_index) : 0, msg);
+            bfdebug_subnhex(1, "cs base",  cs_index != 0 ? guest_gdt.base(cs_index) : 0, msg);
+            bfdebug_subnhex(1, "ss base",  ss_index != 0 ? guest_gdt.base(ss_index) : 0, msg);
+            bfdebug_subnhex(1, "ds base",  ds_index != 0 ? guest_gdt.base(ds_index) : 0, msg);
+
+            bfdebug_subnhex(1, "fs base",  msrs::ia32_fs_base::get(), msg);
+            bfdebug_subnhex(1, "gs base",  msrs::ia32_gs_base::get(), msg);
+
+            bfdebug_subnhex(1, "ldtr base",  ldtr_index != 0 ? guest_gdt.base(ldtr_index) : 0, msg);
+            bfdebug_subnhex(1, "tr base",  tr_index != 0 ? guest_gdt.base(tr_index) : 0, msg);
+
+	    bfdebug_subnhex(1, "cr0",  cr0::get() | ::intel_x64::msrs::ia32_vmx_cr0_fixed0::get(), msg);
+	    bfdebug_subnhex(1, "cr3",  cr3::get(), msg);
+	    bfdebug_subnhex(1, "cr4",  cr4::get() | ::intel_x64::msrs::ia32_vmx_cr4_fixed0::get(), msg);
+	    bfdebug_subnhex(1, "dr7",  dr7::get(), msg);
+
+	    bfdebug_subnhex(1, "rflags", ::x64::rflags::get(), msg);
+
+	    bfdebug_subnhex(1, "sysenter cs", msrs::ia32_sysenter_cs::get(), msg);
+	    bfdebug_subnhex(1, "sysenter esp", msrs::ia32_sysenter_esp::get(), msg);
+	    bfdebug_subnhex(1, "sysenter eip", msrs::ia32_sysenter_eip::get(), msg);
+
+    });
+
+    ::intel_x64::vmcs::debug::dump(1);
+
 }
 
 void

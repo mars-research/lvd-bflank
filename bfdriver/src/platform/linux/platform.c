@@ -180,15 +180,15 @@ platform_call_vmm_on_core(
         return BF_ERROR_UNKNOWN;
     }
 
-    if (request == BF_REQUEST_VMM_FINI) {
-        load_direct_gdt(raw_smp_processor_id());
-    }
+//    if (request == BF_REQUEST_VMM_FINI) {
+//        load_direct_gdt(raw_smp_processor_id());
+//    }
 
     ret = common_call_vmm(cpuid, request, arg1, arg2);
 
-    if (request == BF_REQUEST_VMM_FINI) {
-        load_fixmap_gdt(raw_smp_processor_id());
-    }
+//    if (request == BF_REQUEST_VMM_FINI) {
+//        load_fixmap_gdt(raw_smp_processor_id());
+//    }
 
     return ret;
 }
