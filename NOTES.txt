@@ -1,0 +1,9 @@
+CPUID
+------
+
+cpuid invocation is implemented in bfintrinsics/include/arch/x64/cpuid.h
+
+An example invocation can be seen in bfvmm/src/hve/arch/intel_x64/vcpu.cpp                                                                                                                           ::x64::cpuid::get(0x4BF00020, 0, 0, 0);
+
+
+ 

@@ -121,6 +121,18 @@ handle_cpuid_0x4BF00021(vcpu *vcpu)
     throw std::runtime_error("unreachable exception");
 }
 
+static bool
+handle_cpuid_lcds_syscall(vcpu *vcpu)
+{
+    ///
+    bfdebug_info(0, "lcds call");
+
+
+    vcpu->set_rax(0x0);
+    return vcpu->advance();
+
+}
+
 cpuid_handler::cpuid_handler(
     gsl::not_null<vcpu *> vcpu)
 {
@@ -155,6 +167,11 @@ cpuid_handler::cpuid_handler(
     this->add_emulator(
         0x4BF00021, handler_delegate_t::create<handle_cpuid_0x4BF00021>()
     );
+
+    this->add_emulator(
+        0x4BF00031, handler_delegate_t::create<handle_cpuid_lcds_syscall>()
+    );
+
 }
 
 // -----------------------------------------------------------------------------
