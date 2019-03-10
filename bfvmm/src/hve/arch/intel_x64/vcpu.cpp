@@ -328,6 +328,8 @@ vcpu::write_guest_state()
     guest_ia32_sysenter_esp::set(msrs::ia32_sysenter_esp::get());
     guest_ia32_sysenter_eip::set(msrs::ia32_sysenter_eip::get());
 
+#if 0
+
     bfdebug_transaction(1, [&](std::string * msg) {
             bfdebug_info(1, "guest state", msg);
 
@@ -401,7 +403,8 @@ vcpu::write_guest_state()
 
     });
 
-    ::intel_x64::vmcs::debug::dump(1);
+    // ::intel_x64::vmcs::debug::dump(1);
+#endif
 
 }
 
