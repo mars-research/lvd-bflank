@@ -124,9 +124,23 @@ handle_cpuid_0x4BF00021(vcpu *vcpu)
 static bool
 handle_cpuid_lcds_syscall(vcpu *vcpu)
 {
-    ///
+    unsigned long  ebx = vcpu->rbx();
+    unsigned long  ecx = vcpu->rcx();
+    unsigned long long eptp_list = (ecx << 32) | ebx;
+ 
     bfdebug_info(0, "lcds call");
 
+    if (::intel_x64::vmcs::primary_processor_based_vm_execution_controls::activate_secondary_controls::is_disabled()) {
+	bfdebug_info(0, "secondary controlls needed for vmfunc are disabled");
+        return false;
+    }
+
+    /* Enable vm functions */
+    ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_vm_functions::enable(); 
+
+    /* enable EPT switching */
+    ::intel_x64::vmcs::vm_function_controls::eptp_switching::enable(); 
+    ::intel_x64::vmcs::eptp_list_address::set(eptp_list);
 
     vcpu->set_rax(0x0);
     return vcpu->advance();

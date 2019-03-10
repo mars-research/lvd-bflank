@@ -6,4 +6,8 @@ cpuid invocation is implemented in bfintrinsics/include/arch/x64/cpuid.h
 An example invocation can be seen in bfvmm/src/hve/arch/intel_x64/vcpu.cpp                                                                                                                           ::x64::cpuid::get(0x4BF00020, 0, 0, 0);
 
 
+set_vmcs_field(): bfintrinsics/include/arch/intel_x64/vmcs/helpers.h
+
+control_enable_vm_functions() is a function that checks vmfunc configuration (useful for configuing vmfunc is in bfvmm/src/hve/arch/intel_x64/check_vmcs_control_fields.cpp
+
  
