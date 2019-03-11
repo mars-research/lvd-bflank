@@ -135,7 +135,7 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
 	 bfdebug_subnhex(0, "rcx", vcpu->rcx(), msg);
 
     });
-#if 0
+
     if (::intel_x64::vmcs::primary_processor_based_vm_execution_controls::activate_secondary_controls::is_disabled()) {
 	bfdebug_info(0, "secondary controlls needed for vmfunc are disabled");
         return false;
@@ -143,14 +143,14 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
 
     /* Enable vm functions */
     ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_vm_functions::enable(); 
-
+    
     /* enable EPT switching */
     ::intel_x64::vmcs::vm_function_controls::eptp_switching::enable(); 
     ::intel_x64::vmcs::eptp_list_address::set(eptp_list);
 
     /* add guest kernel ept as entry 0 */
     ((unsigned long long *)eptp_list)[0] = vcpu->ept(); 
-#endif
+    
     vcpu->set_rax(0x0);
     return vcpu->advance();
 
