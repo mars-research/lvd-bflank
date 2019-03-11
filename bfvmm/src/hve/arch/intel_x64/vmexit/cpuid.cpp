@@ -128,8 +128,14 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
     unsigned long  ecx = vcpu->rcx();
     unsigned long long eptp_list = (ecx << 32) | ebx;
  
-    bfdebug_info(0, "lcds call");
+    bfdebug_transaction(0, [&](std::string * msg) {
+         bfdebug_info(0, "lcds call");
+	 bfdebug_subnhex(0, "eptp_list", eptp_list, msg);
+	 bfdebug_subnhex(0, "rbx", vcpu->rbx(), msg);
+	 bfdebug_subnhex(0, "rcx", vcpu->rcx(), msg);
 
+    });
+#if 0
     if (::intel_x64::vmcs::primary_processor_based_vm_execution_controls::activate_secondary_controls::is_disabled()) {
 	bfdebug_info(0, "secondary controlls needed for vmfunc are disabled");
         return false;
@@ -142,6 +148,9 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
     ::intel_x64::vmcs::vm_function_controls::eptp_switching::enable(); 
     ::intel_x64::vmcs::eptp_list_address::set(eptp_list);
 
+    /* add guest kernel ept as entry 0 */
+    ((unsigned long long *)eptp_list)[0] = vcpu->ept(); 
+#endif
     vcpu->set_rax(0x0);
     return vcpu->advance();
 
