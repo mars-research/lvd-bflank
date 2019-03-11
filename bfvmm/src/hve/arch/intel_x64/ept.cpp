@@ -49,6 +49,10 @@ void ept_handler::set_eptp(ept::mmap *map)
         }
 
         ept_pointer::phys_addr::set(map->eptp());
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "set eptp", map->eptp(), msg);
+        });                          
+
     }
     else {
         if (ept_pointer::phys_addr::get() != 0) {
