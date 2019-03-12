@@ -124,8 +124,8 @@ handle_cpuid_0x4BF00021(vcpu *vcpu)
 static bool
 handle_cpuid_lcds_syscall(vcpu *vcpu)
 {
-    unsigned long  ebx = vcpu->rbx();
-    unsigned long  ecx = vcpu->rcx();
+    unsigned long ebx = vcpu->rbx();
+    unsigned long long ecx = vcpu->rcx();
     unsigned long long eptp_list = (ecx << 32) | ebx;
  
     bfdebug_transaction(0, [&](std::string * msg) {
@@ -160,12 +160,12 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
 
     /* add guest kernel ept as entry 0 */
     bfdebug_transaction(0, [&](std::string * msg) {
-         bfdebug_subnhex(0, "set eptp_list[0]", ::intel_x64::vmcs::ept_pointer::phys_addr::get(), msg);
+         bfdebug_subnhex(0, "return kernel EPT", ::intel_x64::vmcs::ept_pointer::phys_addr::get(), msg);
     });
 
-    //((unsigned long long *)eptp_list)[0] = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
-   
     vcpu->set_rax(0x0);
+    vcpu->set_rbx(::intel_x64::vmcs::ept_pointer::phys_addr::get());
+    vcpu->set_rcx(::intel_x64::vmcs::ept_pointer::phys_addr::get() >> 32);
     return vcpu->advance();
 
 }
