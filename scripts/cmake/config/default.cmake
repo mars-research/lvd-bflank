@@ -751,7 +751,10 @@ set(GNUEFI_URL_MD5 "3cd10dc9c14f4a3891f8537fd78ed04f"
 # ------------------------------------------------------------------------------
 # BFM Configs
 # ------------------------------------------------------------------------------
-
+#
+#  DEFAULT_VAL bfvmm
+#  DEFAULT_VAL integration_intel_x64_misc_ept_enable_ept
+#
 add_config(
     CONFIG_NAME DEFAULT_VMM
     CONFIG_TYPE STRING

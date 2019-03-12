@@ -39,7 +39,9 @@
 #include <exception>
 #include <type_traits>
 
-#ifdef _MSC_VER
+#define DISABLE_COLORS 1
+
+#if defined(_MSC_VER) || defined(DISABLE_COLORS)
 #define bfcolor_black ""
 #define bfcolor_red ""
 #define bfcolor_green ""

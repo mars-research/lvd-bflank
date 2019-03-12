@@ -503,6 +503,7 @@ vcpu::run_delegate(bfobject *obj)
         m_launched = true;
 
         try {
+            bfdebug_info(0, "launched vmm"); 	
             m_vmcs.load();
             m_vmcs.launch();
         }

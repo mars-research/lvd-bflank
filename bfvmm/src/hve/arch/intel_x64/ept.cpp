@@ -68,6 +68,10 @@ void ept_handler::set_eptp(ept::mmap *map)
         }
 
         ept_pointer::phys_addr::set(0);
+	bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_info(0, "set eptp to 0", msg);
+        });                          
+
     }
 }
 

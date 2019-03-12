@@ -91,8 +91,8 @@ set(ENABLE_EXTENDED_APIS_EXAMPLE_HOOK OFF)
 # If the override VMM is set, this VMM will be used instead of the default VMM
 # based on the current configuration.
 #
-# set(OVERRIDE_VMM <name>)
-# set(OVERRIDE_VMM_TARGET <name>)
+set(OVERRIDE_VMM integration_intel_x64_misc_ept_enable_ept)
+set(OVERRIDE_VMM_TARGET integration)
 
 # Override Compiler Warnings
 #

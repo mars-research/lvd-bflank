@@ -156,14 +156,14 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
     });
 
 
-    //::intel_x64::vmcs::eptp_list_address::set_if_exists(eptp_list);
+    ::intel_x64::vmcs::eptp_list_address::set_if_exists(eptp_list);
 
     /* add guest kernel ept as entry 0 */
     bfdebug_transaction(0, [&](std::string * msg) {
          bfdebug_subnhex(0, "set eptp_list[0]", ::intel_x64::vmcs::ept_pointer::phys_addr::get(), msg);
     });
 
-//    ((unsigned long long *)eptp_list)[0] = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
+    //((unsigned long long *)eptp_list)[0] = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
    
     vcpu->set_rax(0x0);
     return vcpu->advance();
