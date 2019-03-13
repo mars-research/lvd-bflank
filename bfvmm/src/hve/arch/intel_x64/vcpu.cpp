@@ -583,6 +583,7 @@ vcpu::dump_stack() {
     /* Dump as words (8 bytes) in groups of 16 */
     while (stack < roundup) {
         bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "addr:", stack, msg); 
             bfdebug_subnhex(0, "", *(unsigned long long *)stack, msg); 
         });
         stack += sizeof(void *); 
