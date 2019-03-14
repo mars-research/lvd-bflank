@@ -566,6 +566,40 @@ vcpu::add_exit_handler(
 // Fault Handling
 //==============================================================================
 
+#define PGSIZE          4096    
+#define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
+
+void 
+vcpu::dump_stack() {
+    /* Assume that entire stack page is mapped */
+    unsigned long long stack = this->rsp(); 
+    unsigned long long roundup = PGROUNDUP(stack) - sizeof(void *); 
+    //unsigned int roundup = stack - sizeof(void *); 
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "stack starting at", this->rsp(), msg); 
+    });
+
+    /* Dump as words (8 bytes) in groups of 16 */
+    while (stack < roundup) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "", *(unsigned long long *)stack, msg); 
+        });
+        stack += sizeof(void *); 
+    }
+
+    /* If any bytes left 1-4 dump them as bytes */    
+    while (stack < roundup) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "addr:", stack, msg); 
+            bfdebug_subnhex(0, ":", *(char *)stack, msg); 
+        });
+
+        stack ++; 
+    }
+}
+
+
 void
 vcpu::dump(const char *str)
 {
@@ -623,6 +657,9 @@ vcpu::dump(const char *str)
     if (exit_reason::vm_entry_failure::is_enabled()) {
         m_vmcs.check();
     }
+
+    dump_stack();
+
 }
 
 void

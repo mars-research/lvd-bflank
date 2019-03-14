@@ -216,6 +216,8 @@ public:
     // Fault Handling
     //==========================================================================
 
+    VIRTUAL void dump_stack();
+
     /// Dump State
     ///
     /// Outputs the state of the vCPU with a custom header

@@ -170,6 +170,14 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
 
 }
 
+static bool
+handle_cpuid_lcds_syscall_dump_stack(vcpu *vcpu)
+{
+    vcpu->dump_stack(); 
+    vcpu->set_rax(0x0);
+    return vcpu->advance();
+}
+
 cpuid_handler::cpuid_handler(
     gsl::not_null<vcpu *> vcpu)
 {
@@ -207,6 +215,10 @@ cpuid_handler::cpuid_handler(
 
     this->add_emulator(
         0x4BF00031, handler_delegate_t::create<handle_cpuid_lcds_syscall>()
+    );
+
+    this->add_emulator(
+        0x4BF00032, handler_delegate_t::create<handle_cpuid_lcds_syscall_dump_stack>()
     );
 
 }
