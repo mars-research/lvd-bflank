@@ -494,6 +494,8 @@ vcpu::write_control_state()
 
     ::intel_x64::vmcs::eptp_list_address::set_if_exists(0);
 
+    ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_vm_functions::dump(0);
+    ::intel_x64::vmcs::vm_function_controls::eptp_switching::dump(0);
 }
 
 //==============================================================================

@@ -142,7 +142,7 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
 
     /* Enable vm functions */
     ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_vm_functions::enable(); 
-    
+
     /* enable EPT switching */
     ::intel_x64::vmcs::vm_function_controls::eptp_switching::enable(); 
 
@@ -161,7 +161,11 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
     /* add guest kernel ept as entry 0 */
     bfdebug_transaction(0, [&](std::string * msg) {
          bfdebug_subnhex(0, "return kernel EPT", ::intel_x64::vmcs::ept_pointer::phys_addr::get(), msg);
+	 bfdebug_subnhex(0, "eptp_list_address", ::intel_x64::vmcs::eptp_list_address::get_if_exists(), msg);
     });
+
+    ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_vm_functions::dump(0);
+    ::intel_x64::vmcs::vm_function_controls::eptp_switching::dump(0);
 
     vcpu->set_rax(0x0);
     vcpu->set_rbx(::intel_x64::vmcs::ept_pointer::phys_addr::get());
