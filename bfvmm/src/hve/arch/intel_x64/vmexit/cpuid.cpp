@@ -140,8 +140,6 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
         return false;
     }
 
-#if 1
-
     /* Enable vm functions */
     ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_vm_functions::enable(); 
 
@@ -168,8 +166,6 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
 
     ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_vm_functions::dump(0);
     ::intel_x64::vmcs::vm_function_controls::eptp_switching::dump(0);
-
-#endif
 
     vcpu->set_rax(0x0);
     vcpu->set_rbx(::intel_x64::vmcs::ept_pointer::get());

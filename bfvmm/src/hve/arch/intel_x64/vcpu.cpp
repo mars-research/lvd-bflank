@@ -475,27 +475,6 @@ vcpu::write_control_state()
     vm_entry_controls::load_ia32_pat::enable();
     vm_entry_controls::load_ia32_efer::enable();
 
-
-    /* Enable vm functions */
-    ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_vm_functions::enable(); 
-    
-    /* enable EPT switching */
-    ::intel_x64::vmcs::vm_function_controls::eptp_switching::enable(); 
-
-    bfdebug_transaction(0, [&](std::string * msg) {
-         bfdebug_subbool(0, "msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1()", 
-			 ::intel_x64::msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1(), msg);
-         bfdebug_subbool(0, "msrs::ia32_vmx_procbased_ctls2::enable_vm_functions::is_allowed1()", 
-			 ::intel_x64::msrs::ia32_vmx_procbased_ctls2::enable_vm_functions::is_allowed1(), msg);
-         bfdebug_subbool(0, "msrs::ia32_vmx_vmfunc::eptp_switching::is_allowed1();", 
-			 ::intel_x64::msrs::ia32_vmx_vmfunc::eptp_switching::is_allowed1(), msg);
-    });
-
-
-    ::intel_x64::vmcs::eptp_list_address::set_if_exists(0);
-
-    ::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_vm_functions::dump(0);
-    ::intel_x64::vmcs::vm_function_controls::eptp_switching::dump(0);
 }
 
 //==============================================================================
