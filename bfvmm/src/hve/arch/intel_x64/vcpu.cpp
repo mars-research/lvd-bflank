@@ -600,7 +600,7 @@ vcpu::dump_stack() {
         bfdebug_subnhex(0, "stack starting at", this->rsp(), msg); 
         bfdebug_subnhex(0, "addr:", stack, msg); 
     });
-
+#if 0
     /* Dump as words (8 bytes) in groups of 16 */
     while (stack < roundup) {
         bfdebug_transaction(0, [&](std::string * msg) {
@@ -619,6 +619,7 @@ vcpu::dump_stack() {
 
         stack ++; 
     }
+#endif
 }
 
 
