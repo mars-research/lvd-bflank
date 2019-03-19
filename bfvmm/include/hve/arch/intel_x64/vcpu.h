@@ -216,6 +216,8 @@ public:
     // Fault Handling
     //==========================================================================
 
+    VIRTUAL void dump_epts();
+
     VIRTUAL void dump_stack();
 
     /// Dump State
