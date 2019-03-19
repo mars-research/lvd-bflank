@@ -572,11 +572,13 @@ vcpu::dump_epts() {
 
     unsigned long long eptp = ::intel_x64::vmcs::ept_pointer::get();
     unsigned long long eptp_hpa = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
+    unsigned long long eptp_list = ::intel_x64::vmcs::eptp_list_address::get();
+    unsigned long long current = 0;
 
     bfdebug_transaction(0, [&](std::string * msg) {
             bferror_subnhex(0, "ept_pointer", eptp, msg);
             ::intel_x64::vmcs::ept_pointer::dump(0, msg);
-            bferror_subnhex(0, "eptp_list addres", ::intel_x64::vmcs::eptp_list_address::get(), msg);
+            bferror_subnhex(0, "eptp_list addres", eptp_list, msg);
             ::intel_x64::vmcs::eptp_list_address::dump(0, msg); 
 //            bferror_subnhex(0, "eptp_index", eptp_index::get_if_exists(), msg);
 //            eptp_index::dump(0, msg);
@@ -590,7 +592,19 @@ vcpu::dump_epts() {
         });
     }
 
-    //ept_pointer::phys_addr::set(map->eptp());
+    auto map = this->map_hpa_4k<uint64_t>(eptp_list);
+
+    /* Dump as words (8 bytes) */
+    while ( current < 16 ) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+            std::string ln = "eptp list entry:";
+            bfn::to_string(ln, current, 16);
+            ln += " "; 
+            bfn::to_string(ln, (unsigned long long)map.get()[current], 16);
+            bfdebug_info(0, ln.c_str(), msg); 
+        });
+        current ++; 
+    }
 
 }
 
