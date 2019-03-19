@@ -577,6 +577,8 @@ vcpu::dump_stack() {
     unsigned long long roundup = PGROUNDUP(stack); 
     unsigned long long size = (roundup - stack) / sizeof(unsigned int); 
     unsigned long long current = 0; 
+    unsigned long long current_address = stack + current * sizeof(unsigned int);
+    unsigned long long current_rbp = this->rbp(); 
 
     bfdebug_transaction(0, [&](std::string * msg) {
 
@@ -585,7 +587,7 @@ vcpu::dump_stack() {
             ln += ", rbp:";
             bfn::to_string(ln, this->rbp(), 16);
 
-            ln += ", roundup page:";
+            ln += ", top of stack page:";
             bfn::to_string(ln, roundup, 16);
             bfdebug_info(0, ln.c_str(), msg); 
     });
@@ -593,35 +595,35 @@ vcpu::dump_stack() {
 #if 1
     auto map = this->map_gva_4k<uint32_t>(stack, size);
 
-    //map.get()[0] = gsl::narrow_cast<uint32_t>(info.val);
-
     /* Dump as words (8 bytes) */
-    while (current < 64 /* size */) {
+    while ( (current < 128 ) && (current_address < roundup)) {
         bfdebug_transaction(0, [&](std::string * msg) {
 
+            if (current_rbp == stack + current * sizeof(unsigned int)) {
+
+                 std::string ln = "--- new frame --- (next rbp:";
+                 bfn::to_string(ln, ((unsigned long long)map.get()[current + 1] << 32) + map.get()[current], 16);
+                
+                 ln += ", saved ret:"; 
+                 bfn::to_string(ln, ((unsigned long long)map.get()[current + 2 + 1] << 32) + map.get()[current + 2], 16);
+
+                 ln += ")"; 
+
+                 bfdebug_info(0, ln.c_str(), msg); 
+
+                 current_rbp = ((unsigned long long)map.get()[current + 1] << 32) + map.get()[current];  
+            }
+
             std::string ln = "stack addr:";
-            bfn::to_string(ln, stack + current * sizeof(unsigned int), 16);
+            bfn::to_string(ln, current_address, 16);
             ln += " "; 
             bfn::to_string(ln, ((unsigned long long)map.get()[current + 1] << 32) + map.get()[current], 16);
             bfdebug_info(0, ln.c_str(), msg); 
         });
-        current += 2; //sizeof(void *); 
+        current += 2; 
+        current_address = stack + current * sizeof(unsigned int); 
     }
 
-#if 0
-    /* If any bytes left 1-4 dump them as bytes */    
-    while (stack + current < roundup) {
-        bfdebug_transaction(0, [&](std::string * msg) {
-            std::string ln = "stack addr:";
-            bfn::to_string(ln, stack + current, 16);
-            ln += " "; 
-            bfn::to_string(map.get()[current], 16);
-            bfdebug_info(0, ln.c_str(), msg); 
-        });
-
-        current ++; 
-    }
-#endif
 #endif
 }
 
