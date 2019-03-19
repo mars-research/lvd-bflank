@@ -574,32 +574,54 @@ void
 vcpu::dump_stack() {
     /* Assume that entire stack page is mapped */
     unsigned long long stack = this->rsp(); 
-    unsigned long long roundup = PGROUNDUP(stack) - sizeof(void *); 
-    //unsigned int roundup = stack - sizeof(void *); 
+    unsigned long long roundup = PGROUNDUP(stack); 
+    unsigned long long size = (roundup - stack) / sizeof(unsigned int); 
+    unsigned long long current = 0; 
 
     bfdebug_transaction(0, [&](std::string * msg) {
-        bfdebug_subnhex(0, "stack starting at", this->rsp(), msg); 
-        bfdebug_subnhex(0, "addr:", stack, msg); 
+
+            std::string ln = "stack starting at (rsp):";
+            bfn::to_string(ln, this->rsp(), 16);
+            ln += ", rbp:";
+            bfn::to_string(ln, this->rbp(), 16);
+
+            ln += ", roundup page:";
+            bfn::to_string(ln, roundup, 16);
+            bfdebug_info(0, ln.c_str(), msg); 
     });
+
+#if 1
+    auto map = this->map_gva_4k<uint32_t>(stack, size);
+
+    //map.get()[0] = gsl::narrow_cast<uint32_t>(info.val);
+
+    /* Dump as words (8 bytes) */
+    while (current < 64 /* size */) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+
+            std::string ln = "stack addr:";
+            bfn::to_string(ln, stack + current * sizeof(unsigned int), 16);
+            ln += " "; 
+            bfn::to_string(ln, ((unsigned long long)map.get()[current + 1] << 32) + map.get()[current], 16);
+            bfdebug_info(0, ln.c_str(), msg); 
+        });
+        current += 2; //sizeof(void *); 
+    }
+
 #if 0
-    /* Dump as words (8 bytes) in groups of 16 */
-    while (stack < roundup) {
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "addr:", stack, msg); 
-            bfdebug_subnhex(0, "", *(unsigned long long *)stack, msg); 
-        });
-        stack += sizeof(void *); 
-    }
-
     /* If any bytes left 1-4 dump them as bytes */    
-    while (stack < roundup) {
+    while (stack + current < roundup) {
         bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "addr:", stack, msg); 
-            bfdebug_subnhex(0, ":", *(char *)stack, msg); 
+            std::string ln = "stack addr:";
+            bfn::to_string(ln, stack + current, 16);
+            ln += " "; 
+            bfn::to_string(map.get()[current], 16);
+            bfdebug_info(0, ln.c_str(), msg); 
         });
 
-        stack ++; 
+        current ++; 
     }
+#endif
 #endif
 }
 
