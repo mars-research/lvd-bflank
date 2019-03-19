@@ -120,7 +120,9 @@ public:
     ///
     mmap(virt_addr_t etp_hpa) :
         m_no_deallocate(true)
-    { }
+    { 
+    
+    }
 
 
     /// Destructor
