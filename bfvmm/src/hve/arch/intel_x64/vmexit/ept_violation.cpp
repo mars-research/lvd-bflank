@@ -88,6 +88,21 @@ ept_violation_handler::handle(vcpu *vcpu)
         true
     };
 
+    bfdebug_transaction(0, [&](std::string * msg) {
+            std::string ln = "EPT violation, guest linear:";
+            bfn::to_string(ln, guest_linear_address::get(), 16);
+            ln += ", guest physical:";
+            bfn::to_string(ln, guest_physical_address::get(), 16);
+
+            ln += ", qualification:";
+            bfn::to_string(ln, qual, 16);
+            bfdebug_info(0, ln.c_str(), msg); 
+    });
+
+    vcpu->dump(""); 
+
+    vcpu->dump_stack(); 
+
     if (exit_qualification::ept_violation::data_read::is_enabled(qual)) {
         return handle_read(vcpu, info);
     }
