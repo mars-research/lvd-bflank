@@ -570,18 +570,18 @@ vcpu::add_exit_handler(
 void 
 vcpu::dump_epts() {
 
-    unsigned long long eptp = ept_pointer::get();
-    unsigned long long eptp_hpa = ept_pointer::phys_addr::get(); 
+    unsigned long long eptp = ::intel_x64::vmcs::ept_pointer::get();
+    unsigned long long eptp_hpa = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
 
     bfdebug_transaction(0, [&](std::string * msg) {
-            bferror_subnhex(0, "ept_pointer", ept_pointer::get(), msg);
-            ept_pointer::dump(0, msg);
-            bferror_subnhex(0, "eptp_list addres", eptp_list_address::get(), msg);
-            eptp_list_address::dump(0, msg); 
+            bferror_subnhex(0, "ept_pointer", eptp, msg);
+            ::intel_x64::vmcs::ept_pointer::dump(0, msg);
+            bferror_subnhex(0, "eptp_list addres", ::intel_x64::vmcs::eptp_list_address::get(), msg);
+            ::intel_x64::vmcs::eptp_list_address::dump(0, msg); 
 //            bferror_subnhex(0, "eptp_index", eptp_index::get_if_exists(), msg);
 //            eptp_index::dump(0, msg);
     });
-
+    
     if (this->m_mmap->eptp() != eptp_hpa) {
         bfdebug_transaction(0, [&](std::string * msg) {
             bfdebug_info(0, "vcpu's EPT pointer doesn't match vmcs (VMFUNC'ed?)", msg); 
