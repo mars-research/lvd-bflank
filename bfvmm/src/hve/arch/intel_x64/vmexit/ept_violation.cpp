@@ -115,8 +115,8 @@ ept_violation_handler::handle(vcpu *vcpu)
     std::pair<uintptr_t, uintptr_t> gpa_hpa_pair = vcpu->gpa_to_hpa(gpa);
 
     bfdebug_transaction(0, [&](std::string * msg) {
-            bferror_subnhex(0, "gpa", gpa_hpa_pair.first(), msg);
-            bferror_subnhex(0, "hpa", gpa_hpa_pair.second(), msg);
+            bferror_subnhex(0, "gpa", gpa_hpa_pair.first, msg);
+            bferror_subnhex(0, "hpa", gpa_hpa_pair.second, msg);
     });
 
     vcpu->dump_stack(); 
