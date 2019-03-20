@@ -88,18 +88,30 @@ ept_violation_handler::handle(vcpu *vcpu)
         true
     };
 
+
+    auto gva = guest_linear_address::get(); 
+    auto gpa = guest_physical_address::get(); 
+
     bfdebug_transaction(0, [&](std::string * msg) {
             std::string ln = "EPT violation, guest linear:";
-            bfn::to_string(ln, guest_linear_address::get(), 16);
+            bfn::to_string(ln, gva, 16);
             ln += ", guest physical:";
-            bfn::to_string(ln, guest_physical_address::get(), 16);
+            bfn::to_string(ln, gpa, 16);
 
             ln += ", qualification:";
             bfn::to_string(ln, qual, 16);
             bfdebug_info(0, ln.c_str(), msg); 
     });
 
-    vcpu->dump(""); 
+    vcpu->dump("Guest CPU state");
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+            ept_pointer::dump(0, msg); 
+            eptp_list_address::dump(0, msg); 
+            eptp_index::dump(0, msg);
+    });
+
+    std::pair<uintptr_t, uintptr_t> gpa_hpa_pair = vcpu->gpa_to_hpa(gpa);
 
     vcpu->dump_stack(); 
 
