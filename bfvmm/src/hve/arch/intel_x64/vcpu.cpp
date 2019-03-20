@@ -594,6 +594,7 @@ vcpu::dump_stack() {
 
     if(size == 0) {
         bfdebug_info(0, "stack is empty"); 
+        return;
     };
 
 #if 1

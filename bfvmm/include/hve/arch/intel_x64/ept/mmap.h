@@ -714,6 +714,38 @@ private:
         };
     }
 
+#if 0    
+    void
+    check_pdpt(index_type pml4i)
+    {
+        using namespace ::intel_x64::ept;
+        auto &entry = m_pml4.virt_addr.at(pml4i);
+
+        if (entry != 0) {
+            auto phys_addr = pml4::entry::phys_addr::get(entry);
+
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bferror_subnhex(0, "mapping ok for pml4 index", pml4i, msg);
+                bferror_subnhex(0, "physical addr", phys_addr, msg);
+            });
+
+            if (m_pdpt.phys_addr == phys_addr) {
+                return;
+            }
+
+            m_pdpt = phys_to_pair(phys_addr, pdpt::num_entries);
+            return;
+        }
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bferror_subnhex(0, "pml4 index", pnl4i, msg);
+            bferror_subnhex(0, "hpa", gpa_hpa_pair.second, msg);
+        });
+
+    }
+
+#endif
+
     void
     map_pdpt(index_type pml4i)
     {
