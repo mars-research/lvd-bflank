@@ -177,6 +177,7 @@ handle_cpuid_lcds_syscall(vcpu *vcpu)
 static bool
 handle_cpuid_lcds_syscall_dump_stack(vcpu *vcpu)
 {
+    vcpu->dump_instruction(); 
     vcpu->dump_stack(); 
     vcpu->set_rax(0x0);
     return vcpu->advance();

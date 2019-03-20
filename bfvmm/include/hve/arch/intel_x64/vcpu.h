@@ -222,6 +222,8 @@ public:
 
     VIRTUAL void dump_stack();
 
+    VIRTUAL void dump_instruction();
+
     /// Dump State
     ///
     /// Outputs the state of the vCPU with a custom header

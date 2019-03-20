@@ -569,6 +569,7 @@ vcpu::add_exit_handler(
 void 
 vcpu::dump_ept_entry(uint64_t gpa) {
 
+
     uint64_t hpa = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
    
     bfdebug_transaction(0, [&](std::string * msg) {
@@ -589,6 +590,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
     	});
     };
 
+
     {
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pdpt::index(gpa); 
@@ -600,6 +602,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
             bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
     	});
     };
+
 
     {
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
@@ -613,6 +616,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
     	});
     };
 
+#if 1
     {
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pt::index(gpa); 
@@ -627,7 +631,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
     	});
     };
 
-
+#endif
 
 }
 
@@ -672,6 +676,33 @@ vcpu::dump_ept_pointers() {
 
 }
 
+
+void 
+vcpu::dump_instruction() {
+    /* Assume that entire stack page is mapped */
+    unsigned long long instr_addr = this->rip(); 
+    unsigned long long size = 16; 
+    unsigned long long current_address = instr_addr;
+
+    auto map = this->map_gva_4k<uint8_t>(instr_addr, size);
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        unsigned long long i = 0; 
+
+        std::string ln = "instr starting at (rip):";
+        bfn::to_string(ln, instr_addr, 16);
+        ln += ":";
+
+        /* Dump memory as individual bytes */
+        while (current_address < instr_addr + size ) {
+            bfn::to_string(ln, map.get()[i], 16, false);
+            ln += ", ";
+            i ++; 
+            current_address += sizeof(uint8_t);
+        };
+        bfdebug_info(0, ln.c_str(), msg); 
+    }); 
+}
 
 #define PGSIZE          4096    
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
@@ -795,6 +826,7 @@ vcpu::dump(const char *str)
     }
 
     dump_ept_pointers();
+    dump_instruction(); 
     dump_stack();
 
 }
