@@ -592,6 +592,10 @@ vcpu::dump_stack() {
             bfdebug_info(0, ln.c_str(), msg); 
     });
 
+    if(size == 0) {
+        bfdebug_info(0, "stack is empty"); 
+    };
+
 #if 1
     auto map = this->map_gva_4k<uint32_t>(stack, size);
 
