@@ -566,9 +566,73 @@ vcpu::add_exit_handler(
 //==============================================================================
 // Fault Handling
 //==============================================================================
+void 
+vcpu::dump_ept_entry(uint64_t gpa) {
+
+    uint64_t hpa = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
+   
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "eptl4 walk for gpa", gpa, msg);
+        bfdebug_subnhex(0, "eptl4 (root) hpa", hpa, msg);
+
+    });
+
+    {
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pml4::index(gpa); 
+        uint64_t entry = map.get()[index];
+
+        hpa = ::x64::pml4::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl4 etnry", entry, msg);
+    	});
+    };
+
+    {
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pdpt::index(gpa); 
+        uint64_t entry = map.get()[index];
+
+        hpa = ::x64::pdpt::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
+    	});
+    };
+
+    {
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pd::index(gpa); 
+        uint64_t entry = map.get()[index];
+
+        hpa = ::x64::pd::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl2 etnry", entry, msg);
+    	});
+    };
+
+    {
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pt::index(gpa); 
+        uint64_t entry = map.get()[index];
+
+        hpa = ::x64::pt::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl1 etnry", entry, msg);
+            bfdebug_subnhex(0, "hpa", hpa, msg);
+
+    	});
+    };
+
+
+
+}
 
 void 
-vcpu::dump_epts() {
+vcpu::dump_ept_pointers() {
 
     unsigned long long eptp = ::intel_x64::vmcs::ept_pointer::get();
     unsigned long long eptp_hpa = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
@@ -730,7 +794,7 @@ vcpu::dump(const char *str)
         m_vmcs.check();
     }
 
-    dump_epts();
+    dump_ept_pointers();
     dump_stack();
 
 }

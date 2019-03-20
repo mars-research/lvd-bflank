@@ -113,18 +113,6 @@ public:
         m_pml4{allocate_span(::intel_x64::ept::pml4::num_entries), 0}
     { }
 
-    /// Constructor
-    ///
-    /// @expects
-    /// @ensures
-    ///
-    mmap(virt_addr_t etp_hpa) :
-        m_no_deallocate(true)
-    { 
-    
-    }
-
-
     /// Destructor
     ///
     /// @expects
@@ -133,9 +121,6 @@ public:
     ~mmap()
     {
         using namespace ::intel_x64::ept;
-
-	if(m_no_deallocate)
-		return;
 
         for (auto pml4i = 0; pml4i < pml4::num_entries; pml4i++) {
             auto &entry = m_pml4.virt_addr.at(pml4i);
@@ -1256,8 +1241,6 @@ private:
     pair m_pdpt;
     pair m_pd;
     pair m_pt;
-
-    bool m_no_deallocate = false; 
 
     mutable std::mutex m_mutex;
 

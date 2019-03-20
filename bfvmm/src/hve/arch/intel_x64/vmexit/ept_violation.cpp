@@ -105,6 +105,7 @@ ept_violation_handler::handle(vcpu *vcpu)
 
     vcpu->dump("Guest CPU state");
 
+    vcpu->dump_ept_entry(gpa); 
     
     //std::pair<uintptr_t, uintptr_t> gpa_hpa_pair = vcpu->gpa_to_hpa(gpa);
     //

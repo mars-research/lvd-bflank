@@ -216,7 +216,9 @@ public:
     // Fault Handling
     //==========================================================================
 
-    VIRTUAL void dump_epts();
+    VIRTUAL void dump_ept_entry(uint64_t gpa);
+
+    VIRTUAL void dump_ept_pointers();
 
     VIRTUAL void dump_stack();
 
