@@ -40,8 +40,7 @@ using namespace bfvmm::intel_x64;
 namespace test
 {
 
-bfn::once_flag flag;
-ept::mmap g_guest_map;
+ept::mmap g_guest_map[MAX_CPUS];
 
 void
 test_hlt_delegate(bfobject *obj)
@@ -56,18 +55,15 @@ public:
     explicit vcpu(vcpuid::type id) :
         bfvmm::intel_x64::vcpu{id}
     {
-        bfn::call_once(flag, [&] {
-            ept::identity_map(
-                g_guest_map,
-                MAX_PHYS_ADDR
-            );
-        });
+        ept::identity_map(g_guest_map[id],
+                          MAX_PHYS_ADDR);
+
 
         this->add_hlt_delegate(
             hlt_delegate_t::create<test_hlt_delegate>()
         );
 
-        this->set_eptp(g_guest_map);
+        this->set_eptp(g_guest_map[id]);
     }
 
     ~vcpu() override = default;

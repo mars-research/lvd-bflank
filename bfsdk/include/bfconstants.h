@@ -26,6 +26,13 @@
 #include <bfarch.h>
 #include <bftypes.h>
 
+#ifndef MAX_CPUS
+#define MAX_CPUS 32
+#endif
+
+
+
+
 /*
  * Max Physical Address
  *
