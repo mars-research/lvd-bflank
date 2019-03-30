@@ -183,6 +183,50 @@ handle_cpuid_lcds_syscall_dump_stack(vcpu *vcpu)
     return vcpu->advance();
 }
 
+static bool
+handle_cpuid_lcds_syscall_abort(vcpu *vcpu)
+{
+    vcpu->dump_instruction(); 
+    vcpu->dump_stack(); 
+    //vcpu->dump(); 
+    vcpu->set_rax(0x0);
+    vcpu->halt(); 
+    return false; 
+}
+
+/* rbx - gpa
+ * rcx - hpa of a page to be mapped */
+
+static bool
+handle_cpuid_lcds_syscall_map_page(vcpu *vcpu)
+{
+    uint64_t gpa = vcpu->rbx();
+    uint64_t hpa = vcpu->rcx();
+ 
+    bfdebug_transaction(0, [&](std::string * msg) {
+         bfdebug_info(0, "lcds map page call");
+         bfdebug_subnhex(0, "gpa", gpa, msg);
+         bfdebug_subnhex(0, "hpa", hpa, msg);
+    });
+
+    auto gpa1_2m = bfn::upper(gpa, ::intel_x64::ept::pd::from);
+    auto gpa1_4k = bfn::upper(gpa, ::intel_x64::ept::pt::from);
+    auto gpa2_4k = bfn::upper(hpa, ::intel_x64::ept::pt::from);
+
+    ept::identity_map_convert_2m_to_4k(
+            *vcpu->get_ept_map(),
+            gpa1_2m
+    );
+
+    auto [pte, unused] = vcpu->get_ept_map()->entry(hpa);
+    ::intel_x64::ept::pt::entry::phys_addr::set(pte, gpa2_4k);
+
+    vcpu->set_rax(0x0);
+    return vcpu->advance();
+
+}
+
+
 cpuid_handler::cpuid_handler(
     gsl::not_null<vcpu *> vcpu)
 {
@@ -224,6 +268,14 @@ cpuid_handler::cpuid_handler(
 
     this->add_emulator(
         0x4BF00032, handler_delegate_t::create<handle_cpuid_lcds_syscall_dump_stack>()
+    );
+
+    this->add_emulator(
+        0x4BF00033, handler_delegate_t::create<handle_cpuid_lcds_syscall_abort>()
+    );
+
+    this->add_emulator(
+        0x4BF00034, handler_delegate_t::create<handle_cpuid_lcds_syscall_map_page>()
     );
 
 }

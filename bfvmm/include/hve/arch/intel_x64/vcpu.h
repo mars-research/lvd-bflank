@@ -1882,6 +1882,12 @@ public:
 
     /// @endcond
 
+public: 
+    ept::mmap *get_ept_map(void) {
+        return this->m_mmap; 
+    }
+
+
 private:
 
     uint64_t m_gr1{};
