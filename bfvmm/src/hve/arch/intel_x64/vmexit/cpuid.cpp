@@ -218,7 +218,7 @@ handle_cpuid_lcds_syscall_map_page(vcpu *vcpu)
             gpa1_2m
     );
 
-    auto [pte, unused] = vcpu->get_ept_map()->entry(hpa);
+    auto [pte, unused] = vcpu->get_ept_map()->entry(gpa1_4k);
     ::intel_x64::ept::pt::entry::phys_addr::set(pte, gpa2_4k);
 
     vcpu->set_rax(0x0);
