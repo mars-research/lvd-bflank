@@ -654,9 +654,9 @@ vcpu::dump_ept_pointers() {
     
     if (this->m_mmap->eptp() != eptp_hpa) {
         bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_info(0, "vcpu's EPT pointer doesn't match vmcs (VMFUNC'ed?)", msg); 
+            bfdebug_info(0, "vcpu's EPT pointer doesn't match hardware (VMFUNC'ed?)", msg); 
             bfdebug_subnhex(0, "vcpu's EPT poiner", this->m_mmap->eptp(), msg); 
-            bfdebug_subnhex(0, "vmcs' EPT poiner", eptp_hpa, msg);
+            bfdebug_subnhex(0, "hardware EPT poiner", eptp_hpa, msg);
         });
     }
 
@@ -716,6 +716,15 @@ vcpu::dump_stack() {
     unsigned long long current = 0; 
     unsigned long long current_address = stack;
     unsigned long long current_rbp = this->rbp(); 
+
+
+    if (this->m_mmap->eptp() != ::intel_x64::vmcs::ept_pointer::phys_addr::get()) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_info(0, "VMFUNC'ed not going to dump the stack (don't have EPT)", msg); 
+        });
+
+        return; 
+    };
 
     bfdebug_transaction(0, [&](std::string * msg) {
 
@@ -824,6 +833,8 @@ vcpu::dump(const char *str)
     if (exit_reason::vm_entry_failure::is_enabled()) {
         m_vmcs.check();
     }
+
+    ::intel_x64::vmcs::debug::dump();
 
     dump_ept_pointers();
     dump_instruction(); 
