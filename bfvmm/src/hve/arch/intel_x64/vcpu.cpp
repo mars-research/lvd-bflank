@@ -717,6 +717,15 @@ vcpu::dump_stack() {
     unsigned long long current_address = stack;
     unsigned long long current_rbp = this->rbp(); 
 
+
+    if (this->m_mmap->eptp() != ::intel_x64::vmcs::ept_pointer::phys_addr::get()) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_info(0, "VMFUNC'ed not going to dump the stack (don't have EPT)", msg); 
+        });
+
+        return; 
+    };
+
     bfdebug_transaction(0, [&](std::string * msg) {
 
             std::string ln = "stack starting at (rsp):";
