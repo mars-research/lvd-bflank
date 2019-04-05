@@ -566,6 +566,132 @@ vcpu::add_exit_handler(
 //==============================================================================
 // Fault Handling
 //==============================================================================
+
+uint64_t
+vcpu::lcd_gpa_to_hpa(uint64_t gpa) {
+
+    uint64_t hpa = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
+   
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "eptl4 walk for gpa", gpa, msg);
+        bfdebug_subnhex(0, "eptl4 (root) hpa", hpa, msg);
+
+    });
+
+    {
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pml4::index(gpa); 
+        uint64_t entry = map.get()[index];
+
+        hpa = ::x64::pml4::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl4 etnry", entry, msg);
+    	});
+    };
+
+
+    {
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pdpt::index(gpa); 
+        uint64_t entry = map.get()[index];
+
+        hpa = ::x64::pdpt::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
+    	});
+    };
+
+
+    {
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pd::index(gpa); 
+        uint64_t entry = map.get()[index];
+
+        hpa = ::x64::pd::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl2 etnry", entry, msg);
+    	});
+    };
+
+    {
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pt::index(gpa); 
+        uint64_t entry = map.get()[index];
+
+        hpa = ::x64::pt::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl1 etnry", entry, msg);
+            bfdebug_subnhex(0, "hpa", hpa, msg);
+
+    	});
+    };
+
+    return hpa + bfn::lower(gpa); 
+};
+
+uint64_t
+vcpu::lcd_gva_to_gpa(uint64_t gva) {
+
+    uint64_t gpa = ::intel_x64::vmcs::guest_cr3::get(); 
+    uint64_t hpa = 0; 
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "ptl4 walk for gva", gva, msg);
+        bfdebug_subnhex(0, "ptl4 (root) gpa", gpa, msg);
+
+    });
+
+    {
+        hpa = lcd_gpa_to_hpa(gpa);
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pml4::index(gva); 
+        uint64_t entry = map.get()[index];
+
+        gpa = ::x64::pml4::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "ptl4 etnry", entry, msg);
+    	});
+    };
+
+
+    {
+        hpa = lcd_gpa_to_hpa(gpa);
+
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pdpt::index(gva); 
+        uint64_t entry = map.get()[index];
+
+        gpa = ::x64::pdpt::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
+    	});
+    };
+
+
+    {
+        hpa = lcd_gpa_to_hpa(gpa);
+
+    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        uint64_t index = ::x64::pd::index(gva); 
+        uint64_t entry = map.get()[index];
+
+        gpa = ::x64::pd::entry::phys_addr::get(entry);
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_subnhex(0, "eptl2 etnry", entry, msg);
+    	});
+    };
+
+    return gpa + bfn::lower(gva, ::x64::pd::from); 
+};
+
+
 void 
 vcpu::dump_ept_entry(uint64_t gpa) {
 
@@ -616,7 +742,6 @@ vcpu::dump_ept_entry(uint64_t gpa) {
     	});
     };
 
-#if 1
     {
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pt::index(gpa); 
@@ -630,8 +755,6 @@ vcpu::dump_ept_entry(uint64_t gpa) {
 
     	});
     };
-
-#endif
 
 }
 
@@ -783,6 +906,7 @@ vcpu::dump_exception_stack() {
     unsigned long long size = roundup - stack; 
     unsigned long long current = 0; 
     unsigned long long current_address = stack;
+	uint64_t stack_gpa, stack_hpa;
 
     bfdebug_transaction(0, [&](std::string * msg) {
         bferror_subnhex(0, "Exception stack starting at (rsp)", this->rsp(), msg);
@@ -794,15 +918,20 @@ vcpu::dump_exception_stack() {
         return;
     };
 
-    auto map = this->map_gva_4k<uint64_t>(stack, size);
+    stack_gpa = lcd_gva_to_gpa(stack);  
+
+    stack_hpa = lcd_gpa_to_hpa(stack_gpa);
+
+    auto map = this->map_hpa_4k<uint64_t>(bfn::upper(stack_hpa));
+	uint64_t offset = bfn::lower(stack_hpa); 
 
     bfdebug_transaction(0, [&](std::string * msg) {
-        bferror_subnhex(0, "saved rax",  map.get()[0], msg);
-        bferror_subnhex(0, "rip",  map.get()[1], msg);
-        bferror_subnhex(0, "cs",  map.get()[2], msg);
-        bferror_subnhex(0, "flags",  map.get()[3], msg);
-        bferror_subnhex(0, "rsp",  map.get()[4], msg);
-        bferror_subnhex(0, "ss",  map.get()[5], msg);
+        bferror_subnhex(0, "saved rax",  map.get()[offset + 0], msg);
+        bferror_subnhex(0, "rip",  map.get()[offset + 1], msg);
+        bferror_subnhex(0, "cs",  map.get()[offset + 2], msg);
+        bferror_subnhex(0, "flags",  map.get()[offset + 3], msg);
+        bferror_subnhex(0, "rsp",  map.get()[offset + 4], msg);
+        bferror_subnhex(0, "ss",  map.get()[offset + 5], msg);
     });
 }
 

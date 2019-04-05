@@ -216,6 +216,10 @@ public:
     // Fault Handling
     //==========================================================================
 
+    VIRTUAL uint64_t lcd_gpa_to_hpa(uint64_t gpa);
+
+    VIRTUAL uint64_t lcd_gva_to_gpa(uint64_t gva);
+
     VIRTUAL void dump_ept_entry(uint64_t gpa);
 
     VIRTUAL void dump_ept_pointers();
@@ -1676,6 +1680,90 @@ public:
     template<typename T>
     auto map_gva_4k(void *gva, std::size_t len)
     { return map_gva_4k<T>(reinterpret_cast<uintptr_t>(gva), len); }
+
+#if 0
+
+    /// Map GVA (2m)
+    ///
+    /// Map a 4k guest virtual address into the VMM. The result of this
+    /// function is a unique_map that will unmap when scope is lost, and
+    /// provides the ability to access the GVA using the provided HVA.
+    ///
+    /// Note:
+    ///
+    /// This version of the map function will map a contiguous len number
+    /// of bytes. The provided address does not have to be aligned, and the
+    /// resulting HVA will have the same page offset as the provided GVA.
+    ///
+    /// @expects gva != 0
+    /// @expects len != 0
+    /// @ensures
+    ///
+    /// @param gva the guest virtual address
+    /// @param len the number elements to map. This is not in bytes.
+    /// @return a unique_map that can be used to access the gpa
+    ///
+    template<typename T>
+    auto map_gva_2m_guest_4k(uintptr_t gva, std::size_t len)
+    {
+        using namespace ::x64::pt;
+
+        if (vmcs_n::guest_cr0::paging::is_disabled()) {
+            return map_gpa_4k<T>(gva, len);
+        }
+
+        expects(gva != 0);
+        expects(len != 0);
+
+        auto gva_offset = bfn::lower(gva);
+        gva = bfn::upper(gva);
+
+        len *= sizeof(T);
+        len += gva_offset;
+        if (bfn::lower(len) != 0) {
+            len += page_size - bfn::lower(len);
+        }
+
+        auto hva = g_mm->alloc_map(len);
+
+        for (auto bytes = 0ULL; bytes < len; bytes += page_size) {
+            auto gva_addr = gva + bytes;
+            auto hva_addr = reinterpret_cast<uintptr_t>(hva) + bytes;
+
+            g_cr3->map_2m(hva_addr, this->gva_to_hpa(gva_addr).first);
+        }
+
+        return x64::unique_map<T>(
+                   reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(hva) + gva_offset),
+                   x64::unmapper(hva, len)
+               );
+    }
+
+    /// Map GVA (4k)
+    ///
+    /// Map a 4k guest virtual address into the VMM. The result of this
+    /// function is a unique_map that will unmap when scope is lost, and
+    /// provides the ability to access the GVA using the provided HVA.
+    ///
+    /// Note:
+    ///
+    /// This version of the map function will map a contiguous len number
+    /// of bytes. The provided address does not have to be aligned, and the
+    /// resulting HVA will have the same page offset as the provided GVA.
+    ///
+    /// @expects gva != 0
+    /// @expects len != 0
+    /// @ensures
+    ///
+    /// @param gva the guest virtual address
+    /// @param len the number elements to map. This is not in bytes.
+    /// @return a unique_map that can be used to access the gpa
+    ///
+    template<typename T>
+    auto map_gva_2m_guest_4k(void *gva, std::size_t len)
+    { return map_gva_2m_guest_4k<T>(reinterpret_cast<uintptr_t>(gva), len); }
+#endif
+
 
     /// Map Argument (4k)
     ///
