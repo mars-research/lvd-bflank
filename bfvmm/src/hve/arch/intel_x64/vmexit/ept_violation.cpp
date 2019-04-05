@@ -93,14 +93,50 @@ ept_violation_handler::handle(vcpu *vcpu)
     auto gpa = guest_physical_address::get(); 
 
     bfdebug_transaction(0, [&](std::string * msg) {
-            std::string ln = "EPT violation, guest linear:";
-            bfn::to_string(ln, gva, 16);
-            ln += ", guest physical:";
-            bfn::to_string(ln, gpa, 16);
+        std::string ln = "EPT violation, guest linear:";
+        bfn::to_string(ln, gva, 16);
+        ln += ", guest physical:";
+        bfn::to_string(ln, gpa, 16);
 
-            ln += ", qualification:";
-            bfn::to_string(ln, qual, 16);
-            bfdebug_info(0, ln.c_str(), msg); 
+        ln += ", qualification:";
+        bfn::to_string(ln, qual, 16);
+
+        ln += " [ ";
+
+        auto qual_string = [&]() {
+            std::string _qual;
+            for (auto b = 0; b < 8; b++) {
+                if ((qual >> b) & 0x1) {
+                    switch (b) {
+                    case 0:
+                        _qual += " data read, ";
+                        break;
+                    case 1:
+                        _qual += " data write, ";
+                        break;
+                    case 2:
+                        _qual += " ifetch, ";
+                        break;
+                    case 3:
+                        _qual += " read access violation, ";
+                        break;
+                    case 4:
+                        _qual += " write access violation, ";
+                        break;
+                    case 5:
+                        _qual += " execute access violation, ";
+                        break;
+                    case 7:
+                        _qual += " guest linear addr valid ";
+                        break;
+                    }
+                }
+            }
+            return _qual;
+        }();
+        ln += qual_string;
+        ln += " ] ";
+        bfdebug_info(0, ln.c_str(), msg);
     });
 
     vcpu->dump("Guest CPU state");
