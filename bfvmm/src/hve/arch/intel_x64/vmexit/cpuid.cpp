@@ -20,7 +20,8 @@
 // SOFTWARE.
 
 #include <hve/arch/intel_x64/vcpu.h>
-
+#include <bfcallonce.h>
+	    
 void
 WEAK_SYM vcpu_init_root(vcpu_t *vcpu)
 { bfignored(vcpu); }
@@ -77,6 +78,8 @@ handle_cpuid_0x4BF00010(vcpu *vcpu)
     return vcpu->advance();
 }
 
+bfn::once_flag flag;
+
 static bool
 handle_cpuid_0x4BF00011(vcpu *vcpu)
 {
@@ -88,6 +91,10 @@ handle_cpuid_0x4BF00011(vcpu *vcpu)
     ///
 
     bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm");
+    //bfn::call_once(flag, [&] {
+    //    vcpu->dump("Dump sound VMCS"); 
+    //});
+
     return vcpu->advance();
 }
 
@@ -226,6 +233,30 @@ handle_cpuid_lcds_syscall_map_page(vcpu *vcpu)
 
 }
 
+static bool
+handle_cpuid_lcds_syscall_debug_lcd(vcpu *vcpu)
+{
+
+    /* We have an exception from LCD
+     * 
+     * Our stack 
+     * 
+     *  ------------------------
+     *     exception frame 
+     *  -----------------------
+     *     rax
+     *
+     */
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_info(0, "Illegal exception from LCD", msg); 
+    });
+
+    vcpu->dump("Dumping illegal exception from LCD");
+
+    vcpu->dump_instruction(); 
+    vcpu->set_rax(0x0);
+    return vcpu->advance();
+}
 
 cpuid_handler::cpuid_handler(
     gsl::not_null<vcpu *> vcpu)
@@ -276,6 +307,10 @@ cpuid_handler::cpuid_handler(
 
     this->add_emulator(
         0x4BF00034, handler_delegate_t::create<handle_cpuid_lcds_syscall_map_page>()
+    );
+
+    this->add_emulator(
+        0x4BF00035, handler_delegate_t::create<handle_cpuid_lcds_syscall_debug_lcd>()
     );
 
 }

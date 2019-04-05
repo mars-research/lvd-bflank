@@ -10,4 +10,98 @@ set_vmcs_field(): bfintrinsics/include/arch/intel_x64/vmcs/helpers.h
 
 control_enable_vm_functions() is a function that checks vmfunc configuration (useful for configuing vmfunc is in bfvmm/src/hve/arch/intel_x64/check_vmcs_control_fields.cpp
 
- 
+
+CR3 
+-------------------------------------
+
+static bool
+default_wrcr3_handler(vcpu *vcpu)
+{   
+    bfignored(vcpu);
+
+    // Note:
+    //
+    // Just like with CR0, we need to emulate the entire instruction, including
+    // the instruction's side effects. For a write to CR3, this includes
+    // flushing the TLB, minus the global entires. For now we do this using
+    // an EPT global flush. In the future, we should figure out if there is a
+    // more granular way to do this.
+    //
+    
+    ::intel_x64::vmx::invept_global();
+    return false;
+}
+
+
+bfvmm/src/hve/arch/intel_x64/vmexit/control_register.cpp
+
+bool
+control_register_handler::handle(vcpu *vcpu)
+{
+    using namespace vmcs_n::exit_qualification::control_register_access;
+
+    switch (control_register_number::get()) {
+        case 0:
+            return handle_cr0(vcpu);
+
+        case 3:
+            return handle_cr3(vcpu);
+
+        case 4:
+            return handle_cr4(vcpu);
+
+        default:
+            throw std::runtime_error(
+                "control_register_handler::handle: invalid cr number"
+            );
+    }
+}
+
+
+bool
+control_register_handler::handle_cr3(vcpu *vcpu)
+{
+    using namespace vmcs_n::exit_qualification::control_register_access;
+
+    switch (access_type::get()) {
+        case access_type::mov_to_cr:
+            return handle_wrcr3(vcpu);
+
+        case access_type::mov_from_cr:
+            return handle_rdcr3(vcpu);
+
+        case access_type::clts:
+            throw std::runtime_error(
+                "control_register_handler::handle_cr3: clts not supported"
+            );
+
+        default:
+            throw std::runtime_error(
+                "control_register_handler::handle_cr3: lmsw not supported"
+            );
+    }
+}
+
+bool
+control_register_handler::handle_wrcr3(vcpu *vcpu)
+{
+    this->execute_wrcr3(vcpu);
+
+    for (const auto &d : m_wrcr3_handlers) {
+        if (d(vcpu)) {
+            return true;
+        }
+    }
+
+    return vcpu->advance();
+}
+
+void
+control_register_handler::execute_wrcr3(
+    gsl::not_null<vcpu *> vcpu)
+{
+    emulate_rdgpr(vcpu);
+    vcpu->set_gr2(vcpu->cr3());
+    vcpu->set_cr3(vcpu->gr1());
+}
+

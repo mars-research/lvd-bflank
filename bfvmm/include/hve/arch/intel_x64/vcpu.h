@@ -222,6 +222,8 @@ public:
 
     VIRTUAL void dump_stack();
 
+    VIRTUAL void dump_exception_stack();
+
     VIRTUAL void dump_instruction();
 
     /// Dump State

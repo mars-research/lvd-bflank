@@ -775,6 +775,37 @@ vcpu::dump_stack() {
 #endif
 }
 
+void 
+vcpu::dump_exception_stack() {
+    /* Assume that entire stack page is mapped */
+    unsigned long long stack = this->rsp(); 
+    unsigned long long roundup = PGROUNDUP(stack); 
+    unsigned long long size = roundup - stack; 
+    unsigned long long current = 0; 
+    unsigned long long current_address = stack;
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "Exception stack starting at (rsp)", this->rsp(), msg);
+        bferror_subnhex(0, "roundup page", roundup, msg);
+    });
+
+    if(size == 0) {
+        bfdebug_info(0, "stack is empty"); 
+        return;
+    };
+
+    auto map = this->map_gva_4k<uint64_t>(stack, size);
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "saved rax",  map.get()[0], msg);
+        bferror_subnhex(0, "rip",  map.get()[1], msg);
+        bferror_subnhex(0, "cs",  map.get()[2], msg);
+        bferror_subnhex(0, "flags",  map.get()[3], msg);
+        bferror_subnhex(0, "rsp",  map.get()[4], msg);
+        bferror_subnhex(0, "ss",  map.get()[5], msg);
+    });
+}
+
 
 void
 vcpu::dump(const char *str)
