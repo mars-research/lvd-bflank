@@ -253,9 +253,9 @@ handle_cpuid_lcds_syscall_debug_lcd(vcpu *vcpu)
 
     vcpu->dump("Dumping illegal exception from LCD");
 
-    vcpu->dump_instruction(); 
     vcpu->set_rax(0x0);
-    return vcpu->advance();
+    vcpu->halt();
+    return true; 
 }
 
 cpuid_handler::cpuid_handler(

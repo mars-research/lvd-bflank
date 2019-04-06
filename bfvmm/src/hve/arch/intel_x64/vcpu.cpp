@@ -625,7 +625,8 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa) {
 
         bfdebug_transaction(0, [&](std::string * msg) {
             bfdebug_subnhex(0, "eptl1 etnry", entry, msg);
-            bfdebug_subnhex(0, "hpa", hpa, msg);
+            bfdebug_subnhex(0, "hpa (frame)", hpa, msg);
+	    bfdebug_subnhex(0, "hpa", hpa + bfn::lower(gpa), msg);
 
     	});
     };
@@ -641,7 +642,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva) {
 
     bfdebug_transaction(0, [&](std::string * msg) {
         bfdebug_subnhex(0, "ptl4 walk for gva", gva, msg);
-        bfdebug_subnhex(0, "ptl4 (root) gpa", gpa, msg);
+        bfdebug_subnhex(0, "ptl4 (root, aka CR3) gpa", gpa, msg);
 
     });
 
@@ -669,7 +670,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva) {
         gpa = ::x64::pdpt::entry::phys_addr::get(entry);
 
         bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
+            bfdebug_subnhex(0, "ptl3 etnry", entry, msg);
     	});
     };
 
@@ -684,7 +685,9 @@ vcpu::lcd_gva_to_gpa(uint64_t gva) {
         gpa = ::x64::pd::entry::phys_addr::get(entry);
 
         bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "eptl2 etnry", entry, msg);
+            bfdebug_subnhex(0, "ptl2 etnry", entry, msg);
+            bfdebug_subnhex(0, "gpa (frame)", gpa, msg);
+            bfdebug_subnhex(0, "gpa", gpa + bfn::lower(gva, ::x64::pd::from), msg);
     	});
     };
 
@@ -906,7 +909,7 @@ vcpu::dump_exception_stack() {
     unsigned long long size = roundup - stack; 
     unsigned long long current = 0; 
     unsigned long long current_address = stack;
-	uint64_t stack_gpa, stack_hpa;
+    uint64_t stack_gpa, stack_hpa;
 
     bfdebug_transaction(0, [&](std::string * msg) {
         bferror_subnhex(0, "Exception stack starting at (rsp)", this->rsp(), msg);
@@ -920,18 +923,44 @@ vcpu::dump_exception_stack() {
 
     stack_gpa = lcd_gva_to_gpa(stack);  
 
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "stack_gpa", stack_gpa, msg);
+    });
+
     stack_hpa = lcd_gpa_to_hpa(stack_gpa);
 
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "stack_hpa", stack_hpa, msg);
+        bferror_subnhex(0, "bfn::upper(stack_hpa)", bfn::upper(stack_hpa), msg);
+        bferror_subnhex(0, "bfn::lower(stack_hpa)", bfn::lower(stack_hpa), msg);
+    });
+
     auto map = this->map_hpa_4k<uint64_t>(bfn::upper(stack_hpa));
-	uint64_t offset = bfn::lower(stack_hpa); 
+    uint64_t offset = bfn::lower(stack_hpa); 
 
     bfdebug_transaction(0, [&](std::string * msg) {
-        bferror_subnhex(0, "saved rax",  map.get()[offset + 0], msg);
-        bferror_subnhex(0, "rip",  map.get()[offset + 1], msg);
-        bferror_subnhex(0, "cs",  map.get()[offset + 2], msg);
-        bferror_subnhex(0, "flags",  map.get()[offset + 3], msg);
-        bferror_subnhex(0, "rsp",  map.get()[offset + 4], msg);
-        bferror_subnhex(0, "ss",  map.get()[offset + 5], msg);
+        bferror_info(0, "mapped ok", msg);
+    });
+
+    if ((offset % sizeof(uint64_t)) != 0) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+                bferror_subnhex(0, "offset \% sizeof(uint64_t)", offset % sizeof(uint64_t), msg);
+        });
+    };
+
+    if (size < (6*sizeof(uint64_t))) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+                bferror_subnhex(0, "stack size < 6 * sizeof(uint64_t)", size, msg);
+        });
+    };
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "saved rax",  map.get()[offset/sizeof(uint64_t) + 0], msg);
+        bferror_subnhex(0, "rip",  map.get()[offset/sizeof(uint64_t) + 1], msg);
+        bferror_subnhex(0, "cs",  map.get()[offset/sizeof(uint64_t) + 2], msg);
+        bferror_subnhex(0, "flags",  map.get()[offset/sizeof(uint64_t) + 3], msg);
+        bferror_subnhex(0, "rsp",  map.get()[offset/sizeof(uint64_t) + 4], msg);
+        bferror_subnhex(0, "ss",  map.get()[offset/sizeof(uint64_t) + 5], msg);
     });
 }
 
@@ -999,6 +1028,7 @@ vcpu::dump(const char *str)
     dump_ept_pointers();
     dump_instruction(); 
     dump_stack();
+    dump_exception_stack(); 
 
 }
 
