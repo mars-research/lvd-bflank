@@ -948,19 +948,20 @@ vcpu::dump_exception_stack() {
         });
     };
 
-    if (size < (6*sizeof(uint64_t))) {
+    if (size < (7*sizeof(uint64_t))) {
         bfdebug_transaction(0, [&](std::string * msg) {
-                bferror_subnhex(0, "stack size < 6 * sizeof(uint64_t)", size, msg);
+                bferror_subnhex(0, "stack size < 7 * sizeof(uint64_t)", size, msg);
         });
     };
 
     bfdebug_transaction(0, [&](std::string * msg) {
         bferror_subnhex(0, "saved rax",  map.get()[offset/sizeof(uint64_t) + 0], msg);
-        bferror_subnhex(0, "rip",  map.get()[offset/sizeof(uint64_t) + 1], msg);
-        bferror_subnhex(0, "cs",  map.get()[offset/sizeof(uint64_t) + 2], msg);
-        bferror_subnhex(0, "flags",  map.get()[offset/sizeof(uint64_t) + 3], msg);
-        bferror_subnhex(0, "rsp",  map.get()[offset/sizeof(uint64_t) + 4], msg);
-        bferror_subnhex(0, "ss",  map.get()[offset/sizeof(uint64_t) + 5], msg);
+        bferror_subnhex(0, "error code",  map.get()[offset/sizeof(uint64_t) + 1], msg);
+        bferror_subnhex(0, "rip",  map.get()[offset/sizeof(uint64_t) + 2], msg);
+        bferror_subnhex(0, "cs",  map.get()[offset/sizeof(uint64_t) + 3], msg);
+        bferror_subnhex(0, "flags",  map.get()[offset/sizeof(uint64_t) + 4], msg);
+        bferror_subnhex(0, "rsp",  map.get()[offset/sizeof(uint64_t) + 5], msg);
+        bferror_subnhex(0, "ss",  map.get()[offset/sizeof(uint64_t) + 6], msg);
     });
 }
 
