@@ -834,15 +834,58 @@ vcpu::dump_instruction() {
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
 
 void 
-vcpu::dump_stack() {
-    /* Assume that entire stack page is mapped */
-    unsigned long long stack = this->rsp(); 
+vcpu::dump_as_stack(uint64_t *stack_hva, uint64_t stack) {
     unsigned long long roundup = PGROUNDUP(stack); 
     unsigned long long size = roundup - stack; 
     unsigned long long current = 0; 
     unsigned long long current_address = stack;
     unsigned long long current_rbp = this->rbp(); 
 
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "stack starting at", stack, msg);
+        bferror_subnhex(0, "first frame (rbp)", this->rbp(), msg);
+        bferror_subnhex(0, "top of stack page", roundup, msg);
+    });
+
+    if(size == 0) {
+        bfdebug_info(0, "stack is empty"); 
+        return;
+    };
+
+    /* Dump as words (8 bytes) */
+    while ( current < 64 && (current_address < roundup)) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+
+            if (current_rbp == stack + current * sizeof(void*)) {
+                 std::string ln = "--- new frame --- (next rbp:";
+                 bfn::to_string(ln, stack_hva[current], 16);
+                
+                 ln += ", saved ret:"; 
+                 bfn::to_string(ln, stack_hva[current + 1], 16);
+                 ln += ")"; 
+                 
+                 bfdebug_info(0, ln.c_str(), msg); 
+                 current_rbp = stack_hva[current];  
+            }
+
+            std::string ln = "stack addr:";
+            bfn::to_string(ln, current_address, 16);
+            ln += " "; 
+            bfn::to_string(ln, stack_hva[current], 16);
+            bfdebug_info(0, ln.c_str(), msg); 
+        });
+        current ++; 
+        current_address = stack + current * sizeof(void*); 
+    }
+
+};
+
+void 
+vcpu::dump_stack() {
+    /* Assume that entire stack page is mapped */
+    unsigned long long stack = this->rsp(); 
+    unsigned long long roundup = PGROUNDUP(stack); 
+    unsigned long long size = roundup - stack; 
 
     if (this->m_mmap->eptp() != ::intel_x64::vmcs::ept_pointer::phys_addr::get()) {
         bfdebug_transaction(0, [&](std::string * msg) {
@@ -851,54 +894,9 @@ vcpu::dump_stack() {
 
         return; 
     };
-
-    bfdebug_transaction(0, [&](std::string * msg) {
-
-            std::string ln = "stack starting at (rsp):";
-            bfn::to_string(ln, this->rsp(), 16);
-            ln += ", rbp:";
-            bfn::to_string(ln, this->rbp(), 16);
-
-            ln += ", top of stack page:";
-            bfn::to_string(ln, roundup, 16);
-            bfdebug_info(0, ln.c_str(), msg); 
-    });
-
-    if(size == 0) {
-        bfdebug_info(0, "stack is empty"); 
-        return;
-    };
-
-#if 1
+   
     auto map = this->map_gva_4k<uint64_t>(stack, size);
-
-    /* Dump as words (8 bytes) */
-    while ( current < 64 && (current_address < roundup)) {
-        bfdebug_transaction(0, [&](std::string * msg) {
-
-            if (current_rbp == stack + current * sizeof(void*)) {
-                 std::string ln = "--- new frame --- (next rbp:";
-                 bfn::to_string(ln, map.get()[current], 16);
-                
-                 ln += ", saved ret:"; 
-                 bfn::to_string(ln, map.get()[current + 1], 16);
-                 ln += ")"; 
-                 
-		 bfdebug_info(0, ln.c_str(), msg); 
-                 current_rbp = map.get()[current];  
-            }
-
-            std::string ln = "stack addr:";
-            bfn::to_string(ln, current_address, 16);
-            ln += " "; 
-            bfn::to_string(ln, map.get()[current], 16);
-            bfdebug_info(0, ln.c_str(), msg); 
-        });
-        current ++; 
-        current_address = stack + current * sizeof(void*); 
-    }
-
-#endif
+    dump_as_stack(&map.get()[0], stack); 
 }
 
 void 
@@ -917,7 +915,7 @@ vcpu::dump_exception_stack() {
     });
 
     if(size == 0) {
-        bfdebug_info(0, "stack is empty"); 
+        bfdebug_info(0, "Exception stack is empty"); 
         return;
     };
 
@@ -939,7 +937,7 @@ vcpu::dump_exception_stack() {
     uint64_t offset = bfn::lower(stack_hpa); 
 
     bfdebug_transaction(0, [&](std::string * msg) {
-        bferror_info(0, "mapped ok", msg);
+        bferror_info(0, "mapped ok, exception frame:", msg);
     });
 
     if ((offset % sizeof(uint64_t)) != 0) {
@@ -963,6 +961,13 @@ vcpu::dump_exception_stack() {
         bferror_subnhex(0, "rsp",  map.get()[offset/sizeof(uint64_t) + 5], msg);
         bferror_subnhex(0, "ss",  map.get()[offset/sizeof(uint64_t) + 6], msg);
     });
+
+    uint64_t saved_rsp = map.get()[offset/sizeof(uint64_t) + 5]; 
+    if ((saved_rsp >= stack) && (saved_rsp < roundup)) {
+	    /* Dump the stack of the program right before the 
+         * exception, in this case it's on the same page */
+        dump_as_stack(&map.get()[(saved_rsp - stack)/sizeof(uint64_t)], saved_rsp); 
+    };
 }
 
 

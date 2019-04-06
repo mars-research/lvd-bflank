@@ -224,6 +224,8 @@ public:
 
     VIRTUAL void dump_ept_pointers();
 
+    VIRTUAL void dump_as_stack(uint64_t *stack_hva, uint64_t stack); 
+
     VIRTUAL void dump_stack();
 
     VIRTUAL void dump_exception_stack();
