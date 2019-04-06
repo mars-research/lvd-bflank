@@ -1029,8 +1029,7 @@ vcpu::dump(const char *str)
     dump_ept_pointers();
     dump_instruction(); 
     dump_stack();
-    dump_exception_stack(); 
-
+    
 }
 
 void
