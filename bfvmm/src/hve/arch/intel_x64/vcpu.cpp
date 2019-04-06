@@ -905,8 +905,6 @@ vcpu::dump_exception_stack() {
     unsigned long long stack = this->rsp(); 
     unsigned long long roundup = PGROUNDUP(stack); 
     unsigned long long size = roundup - stack; 
-    unsigned long long current = 0; 
-    unsigned long long current_address = stack;
     uint64_t stack_gpa, stack_hpa;
 
     bfdebug_transaction(0, [&](std::string * msg) {
@@ -964,10 +962,56 @@ vcpu::dump_exception_stack() {
 
     uint64_t saved_rsp = map.get()[offset/sizeof(uint64_t) + 5]; 
     if ((saved_rsp >= stack) && (saved_rsp < roundup)) {
-	    /* Dump the stack of the program right before the 
+        /* Dump the stack of the program right before the 
          * exception, in this case it's on the same page */
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bferror_info(0, "Dump stack saved in the exception frame:", msg);
+        });
         dump_as_stack(&map.get()[(saved_rsp - stack)/sizeof(uint64_t)], saved_rsp); 
+
+        /* RSP is pointing somewhere else... lets dump that somewhere else in 
+         * case there is something useful there */
+        if(!((this->rbp() >= stack) && (this->rbp() < roundup))) {
+            uint64_t rbp_stack;
+            uint64_t rbp_stack_gpa, rbp_stack_hpa;
+
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bferror_info(0, "Dump stack starting from rbp:", msg);
+            });
+
+            rbp_stack = this->rbp();
+            rbp_stack_gpa = lcd_gva_to_gpa(rbp_stack);  
+
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bferror_subnhex(0, "rbp_stack_gpa", rbp_stack_gpa, msg);
+            });
+
+            stack_hpa = lcd_gpa_to_hpa(stack_gpa);
+
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bferror_subnhex(0, "rbp_stack_hpa", rbp_stack_hpa, msg);
+                bferror_subnhex(0, "bfn::upper(rbp_stack_hpa)", bfn::upper(rbp_stack_hpa), msg);
+                bferror_subnhex(0, "bfn::lower(rbp_stack_hpa)", bfn::lower(rbp_stack_hpa), msg);
+            });
+
+            auto rbp_map = this->map_hpa_4k<uint64_t>(bfn::upper(rbp_stack_hpa));
+            uint64_t offset = bfn::lower(rbp_stack_hpa); 
+
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bferror_info(0, "mapped ok, rbp stack:", msg);
+            });
+
+            if ((offset % sizeof(uint64_t)) != 0) {
+                bfdebug_transaction(0, [&](std::string * msg) {
+                    bferror_subnhex(0, "offset \% sizeof(uint64_t)", offset % sizeof(uint64_t), msg);
+                });
+            };
+
+            dump_as_stack(&rbp_map.get()[rbp_stack/sizeof(uint64_t)], rbp_stack); 
+        }
+
     };
+
 }
 
 
