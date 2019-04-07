@@ -986,7 +986,7 @@ vcpu::dump_exception_stack() {
                 bferror_subnhex(0, "rbp_stack_gpa", rbp_stack_gpa, msg);
             });
 
-            stack_hpa = lcd_gpa_to_hpa(stack_gpa);
+            rbp_stack_hpa = lcd_gpa_to_hpa(stack_gpa);
 
             bfdebug_transaction(0, [&](std::string * msg) {
                 bferror_subnhex(0, "rbp_stack_hpa", rbp_stack_hpa, msg);
