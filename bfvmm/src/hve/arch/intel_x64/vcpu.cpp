@@ -1007,7 +1007,7 @@ vcpu::dump_exception_stack() {
                 });
             };
 
-            dump_as_stack(&rbp_map.get()[rbp_stack/sizeof(uint64_t)], rbp_stack); 
+            dump_as_stack(&rbp_map.get()[offset/sizeof(uint64_t)], rbp_stack); 
         }
 
     };
