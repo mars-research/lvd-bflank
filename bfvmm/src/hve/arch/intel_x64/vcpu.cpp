@@ -960,6 +960,16 @@ vcpu::dump_exception_stack() {
         bferror_subnhex(0, "ss",  map.get()[offset/sizeof(uint64_t) + 6], msg);
     });
 
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "s1",  map.get()[offset/sizeof(uint64_t) + 7], msg);
+        bferror_subnhex(0, "s2",  map.get()[offset/sizeof(uint64_t) + 8], msg);
+        bferror_subnhex(0, "s3",  map.get()[offset/sizeof(uint64_t) + 9], msg);
+        bferror_subnhex(0, "s4",  map.get()[offset/sizeof(uint64_t) + 10], msg);
+        bferror_subnhex(0, "s5",  map.get()[offset/sizeof(uint64_t) + 11], msg);
+        bferror_subnhex(0, "s6",  map.get()[offset/sizeof(uint64_t) + 12], msg);
+        bferror_subnhex(0, "s7",  map.get()[offset/sizeof(uint64_t) + 13], msg);
+    });
+
     uint64_t saved_rsp = map.get()[offset/sizeof(uint64_t) + 5]; 
     if ((saved_rsp >= stack) && (saved_rsp < roundup)) {
         /* Dump the stack of the program right before the 
