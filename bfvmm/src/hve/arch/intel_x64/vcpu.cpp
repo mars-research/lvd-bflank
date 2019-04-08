@@ -842,22 +842,39 @@ vcpu::dump_ept_pointers() {
 void 
 vcpu::dump_instruction() {
     /* Assume that entire stack page is mapped */
-    unsigned long long instr_addr = this->rip(); 
+    unsigned long long instr_gva = this->rip(); 
     unsigned long long size = 16; 
-    unsigned long long current_address = instr_addr;
+    unsigned long long current_address = instr_gva;
 
-    auto map = this->map_gva_4k<uint8_t>(instr_addr, size);
+    //auto map = this->map_gva_4k<uint8_t>(instr_gva, size);
+    uint64_t instr_gpa = lcd_gva_to_gpa(instr_gva);  
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "instr_gpa", instr_gpa, msg);
+    });
+
+    uint64_t instr_hpa = lcd_gpa_to_hpa(instr_gpa);
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "instr_hpa", instr_hpa, msg);
+        bferror_subnhex(0, "bfn::upper(stack_hpa)", bfn::upper(instr_hpa), msg);
+        bferror_subnhex(0, "bfn::lower(stack_hpa)", bfn::lower(instr_hpa), msg);
+    });
+
+    auto map = this->map_hpa_4k<uint8_t>(bfn::upper(instr_hpa));
+    uint64_t offset = bfn::lower(instr_hpa); 
+
 
     bfdebug_transaction(0, [&](std::string * msg) {
         unsigned long long i = 0; 
 
         std::string ln = "instr starting at (rip):";
-        bfn::to_string(ln, instr_addr, 16);
+        bfn::to_string(ln, instr_gva, 16);
         ln += ":";
 
         /* Dump memory as individual bytes */
-        while (current_address < instr_addr + size ) {
-            bfn::to_string(ln, map.get()[i], 16, false);
+        while (current_address < instr_gva + size ) {
+            bfn::to_string(ln, map.get()[offset + i], 16, false);
             ln += ", ";
             i ++; 
             current_address += sizeof(uint8_t);
