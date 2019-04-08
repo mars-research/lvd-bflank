@@ -861,6 +861,14 @@ vcpu::dump_instruction() {
         bferror_subnhex(0, "bfn::lower(stack_hpa)", bfn::lower(instr_hpa), msg);
     });
 
+    if (instr_hpa == 0) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bferror_subnhex(0, "instr_hpa is null", instr_hpa, msg);
+        });
+	return; 
+    }
+
+
     auto map = this->map_hpa_4k<uint8_t>(bfn::upper(instr_hpa));
     uint64_t offset = bfn::lower(instr_hpa); 
 
