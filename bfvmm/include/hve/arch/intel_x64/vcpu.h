@@ -217,8 +217,10 @@ public:
     //==========================================================================
 
     VIRTUAL uint64_t lcd_gpa_to_hpa(uint64_t gpa);
+    VIRTUAL uint64_t lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp);
 
     VIRTUAL uint64_t lcd_gva_to_gpa(uint64_t gva);
+    VIRTUAL uint64_t lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp);
 
     VIRTUAL void dump_ept_entry(uint64_t gpa);
 

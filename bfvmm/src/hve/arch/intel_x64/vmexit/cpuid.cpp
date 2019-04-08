@@ -259,6 +259,43 @@ handle_cpuid_lcds_syscall_debug_lcd(vcpu *vcpu)
     return true; 
 }
 
+static bool
+handle_cpuid_lcds_syscall_walk_gva(vcpu *vcpu)
+{
+
+    uint64_t gva = vcpu->rbx();
+    uint64_t cr3 = vcpu->rcx();
+    uint64_t verbose = vcpu->rdx();  
+    unsigned long long eptp_list = ::intel_x64::vmcs::eptp_list_address::get();
+
+    auto map = vcpu->map_hpa_4k<uint64_t>(eptp_list);
+    uint64_t eptp = map.get()[1];
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "Walk gva:", gva, msg);
+        bfdebug_subnhex(0, "cr3:", cr3, msg);
+        bfdebug_subnhex(0, "eptp", eptp, msg); 
+    });
+
+    uint64_t gpa = vcpu->lcd_gva_to_gpa(gva, cr3, eptp);  
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "gpa", gpa, msg);
+    });
+
+    uint64_t hpa = vcpu->lcd_gpa_to_hpa(gpa, eptp);
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "hpa", hpa, msg);
+    });
+
+    if (verbose) 
+        vcpu->dump("Walking gva");
+    
+    //vcpu->set_rax(0x0);
+    return vcpu->advance();
+}
+
 cpuid_handler::cpuid_handler(
     gsl::not_null<vcpu *> vcpu)
 {
@@ -312,6 +349,10 @@ cpuid_handler::cpuid_handler(
 
     this->add_emulator(
         0x4BF00035, handler_delegate_t::create<handle_cpuid_lcds_syscall_debug_lcd>()
+    );
+
+    this->add_emulator(
+        0x4BF00036, handler_delegate_t::create<handle_cpuid_lcds_syscall_walk_gva>()
     );
 
 }

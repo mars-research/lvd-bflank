@@ -568,9 +568,9 @@ vcpu::add_exit_handler(
 //==============================================================================
 
 uint64_t
-vcpu::lcd_gpa_to_hpa(uint64_t gpa) {
+vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
 
-    uint64_t hpa = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
+    uint64_t hpa = eptp;  
    
     bfdebug_transaction(0, [&](std::string * msg) {
         bfdebug_subnhex(0, "eptl4 walk for gpa", gpa, msg);
@@ -635,9 +635,14 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa) {
 };
 
 uint64_t
-vcpu::lcd_gva_to_gpa(uint64_t gva) {
+vcpu::lcd_gpa_to_hpa(uint64_t gpa) {
+    return lcd_gpa_to_hpa(gpa, ::intel_x64::vmcs::ept_pointer::phys_addr::get());
+};
 
-    uint64_t gpa = ::intel_x64::vmcs::guest_cr3::get(); 
+uint64_t
+vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp) {
+
+    uint64_t gpa = cr3; 
     uint64_t hpa = 0; 
 
     bfdebug_transaction(0, [&](std::string * msg) {
@@ -647,7 +652,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva) {
     });
 
     {
-        hpa = lcd_gpa_to_hpa(gpa);
+        hpa = lcd_gpa_to_hpa(gpa, eptp);
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pml4::index(gva); 
         uint64_t entry = map.get()[index];
@@ -661,7 +666,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva) {
 
 
     {
-        hpa = lcd_gpa_to_hpa(gpa);
+        hpa = lcd_gpa_to_hpa(gpa, eptp);
 
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pdpt::index(gva); 
@@ -676,7 +681,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva) {
 
 
     {
-        hpa = lcd_gpa_to_hpa(gpa);
+        hpa = lcd_gpa_to_hpa(gpa, eptp);
 
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pd::index(gva); 
@@ -694,6 +699,12 @@ vcpu::lcd_gva_to_gpa(uint64_t gva) {
     return gpa + bfn::lower(gva, ::x64::pd::from); 
 };
 
+uint64_t
+vcpu::lcd_gva_to_gpa(uint64_t gva) {
+    return lcd_gva_to_gpa(gva, 
+                ::intel_x64::vmcs::guest_cr3::get(), 
+                ::intel_x64::vmcs::ept_pointer::phys_addr::get());
+};
 
 void 
 vcpu::dump_ept_entry(uint64_t gpa) {
