@@ -579,6 +579,9 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
     });
 
     {
+        if(hpa == 0)
+            return 0; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pml4::index(gpa); 
         uint64_t entry = map.get()[index];
@@ -592,6 +595,10 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
 
 
     {
+
+        if(hpa == 0)
+            return 0; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pdpt::index(gpa); 
         uint64_t entry = map.get()[index];
@@ -605,6 +612,10 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
 
 
     {
+
+        if(hpa == 0)
+            return 0; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pd::index(gpa); 
         uint64_t entry = map.get()[index];
@@ -617,6 +628,10 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
     };
 
     {
+
+        if(hpa == 0)
+            return 0; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pt::index(gpa); 
         uint64_t entry = map.get()[index];
@@ -626,7 +641,7 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
         bfdebug_transaction(0, [&](std::string * msg) {
             bfdebug_subnhex(0, "eptl1 etnry", entry, msg);
             bfdebug_subnhex(0, "hpa (frame)", hpa, msg);
-	    bfdebug_subnhex(0, "hpa", hpa + bfn::lower(gpa), msg);
+            bfdebug_subnhex(0, "hpa", hpa + bfn::lower(gpa), msg);
 
     	});
     };
@@ -653,6 +668,10 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp) {
 
     {
         hpa = lcd_gpa_to_hpa(gpa, eptp);
+
+        if(hpa == 0)
+            return 0; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pml4::index(gva); 
         uint64_t entry = map.get()[index];
@@ -668,6 +687,9 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp) {
     {
         hpa = lcd_gpa_to_hpa(gpa, eptp);
 
+        if(hpa == 0)
+            return 0; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pdpt::index(gva); 
         uint64_t entry = map.get()[index];
@@ -682,6 +704,9 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp) {
 
     {
         hpa = lcd_gpa_to_hpa(gpa, eptp);
+
+        if(hpa == 0)
+            return 0; 
 
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pd::index(gva); 

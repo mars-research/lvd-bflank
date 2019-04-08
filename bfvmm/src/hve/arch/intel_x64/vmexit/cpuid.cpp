@@ -262,14 +262,13 @@ handle_cpuid_lcds_syscall_debug_lcd(vcpu *vcpu)
 static bool
 handle_cpuid_lcds_syscall_walk_gva(vcpu *vcpu)
 {
-
     uint64_t gva = vcpu->rbx();
     uint64_t cr3 = vcpu->rcx();
     uint64_t verbose = vcpu->rdx();  
     unsigned long long eptp_list = ::intel_x64::vmcs::eptp_list_address::get();
 
     auto map = vcpu->map_hpa_4k<uint64_t>(eptp_list);
-    uint64_t eptp = map.get()[1];
+    uint64_t eptp = bfn::upper(map.get()[1]);
 
     bfdebug_transaction(0, [&](std::string * msg) {
         bfdebug_subnhex(0, "Walk gva:", gva, msg);
