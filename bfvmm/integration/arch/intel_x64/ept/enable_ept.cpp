@@ -62,6 +62,9 @@ public:
         );
 
         this->set_eptp(this->guest_map);
+
+
+	this->enable_vpid();
     }
 
     ~vcpu() override = default;

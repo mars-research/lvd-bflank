@@ -30,13 +30,19 @@ vpid_handler::vpid_handler(
     bfignored(vcpu);
 
     static uint16_t s_id = 1;
-    m_id = s_id++;
+    //m_id = s_id++;
+    m_id = s_id; 
 }
 
 void vpid_handler::enable()
 {
     vmcs_n::virtual_processor_identifier::set(m_id);
     vmcs_n::secondary_processor_based_vm_execution_controls::enable_vpid::enable();
+    
+    bfdebug_transaction(1, [&](std::string * msg) {
+        bfdebug_subnhex(1, "enabled vpid", m_id, msg);
+    });
+ 
 }
 
 void vpid_handler::disable()
