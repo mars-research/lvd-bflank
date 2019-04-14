@@ -63,8 +63,9 @@ public:
 
         this->set_eptp(this->guest_map);
 
-
-	this->enable_vpid();
+        // We don't need to enable VPIDs here, they are already enabled in 
+        // bfvmm/src/hve/arch/intel_x64/vcpu.cpp (vcpu::vcpu() constructor)
+        //this->enable_vpid();
     }
 
     ~vcpu() override = default;

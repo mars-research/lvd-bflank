@@ -1,3 +1,11 @@
+WRMSR
+------
+
+Actual emulation
+bfvmm/src/hve/arch/intel_x64/vmexit/wrmsr.cpp 
+
+
+
 CPUID
 ------
 

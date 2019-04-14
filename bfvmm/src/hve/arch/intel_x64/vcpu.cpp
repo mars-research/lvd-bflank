@@ -197,6 +197,10 @@ vcpu::vcpu(
     m_nmi_handler.enable_exiting();
     m_control_register_handler.enable_wrcr0_exiting(0);
     m_control_register_handler.enable_wrcr4_exiting(0);
+
+    /* Trap on all MSR access */
+    this->trap_on_all_rdmsr_accesses();
+    this->trap_on_all_wrmsr_accesses();
 }
 
 //==============================================================================
