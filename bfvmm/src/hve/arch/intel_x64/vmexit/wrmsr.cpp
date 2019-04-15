@@ -26,6 +26,8 @@ emulate_wrmsr(::x64::msrs::field_type msr, ::x64::msrs::value_type val)
 {
     using namespace ::intel_x64::vmcs;
 
+    
+
     switch (msr) {
         case ::intel_x64::msrs::ia32_debugctl::addr:
             guest_ia32_debugctl::set(val);
@@ -151,6 +153,14 @@ wrmsr_handler::pass_through_all_accesses()
 bool
 wrmsr_handler::handle(vcpu *vcpu)
 {
+    unsigned long long eptp_hpa = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
+
+    if (vcpu->m_mmap->eptp() != eptp_hpa) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_info(0, "wrmsr from LCD", msg); 
+        });
+    }
+
     auto user_already_emulating = m_emulate[vcpu->rcx()];
 
     struct info_t info = {

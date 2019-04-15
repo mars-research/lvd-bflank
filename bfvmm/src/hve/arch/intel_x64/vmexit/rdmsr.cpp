@@ -141,6 +141,16 @@ rdmsr_handler::pass_through_all_accesses()
 bool
 rdmsr_handler::handle(vcpu *vcpu)
 {
+    unsigned long long eptp_hpa = ::intel_x64::vmcs::ept_pointer::phys_addr::get(); 
+
+    if (vcpu->m_mmap->eptp() != eptp_hpa) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_info(0, "rdmsr from LCD", msg); 
+        });
+    }
+
+
+
     auto user_already_emulating = m_emulate[vcpu->rcx()];
 
     struct info_t info = {

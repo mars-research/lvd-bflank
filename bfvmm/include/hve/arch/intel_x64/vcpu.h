@@ -2036,6 +2036,7 @@ private:
 private:
 
     bool m_launched{false};
+public: 
     ept::mmap *m_mmap{};
 };
 
