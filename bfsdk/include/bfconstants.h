@@ -38,7 +38,7 @@
  * Note: defined in bytes (512GB by default)
  */
 #ifndef MAX_PHYS_ADDR
-#define MAX_PHYS_ADDR 0x8000000000
+#define MAX_PHYS_ADDR 0x8000000000*8
 #endif
 
 /*
@@ -61,7 +61,7 @@
  * increasing "K" by 1 will double the amount of memory.
  */
 #ifndef PAGE_POOL_K
-#define PAGE_POOL_K (15ULL)
+#define PAGE_POOL_K (17ULL)
 #endif
 
 /*
@@ -73,7 +73,7 @@
 */
 
 #ifndef HUGE_POOL_K
-#define HUGE_POOL_K (15ULL)
+#define HUGE_POOL_K (17ULL)
 #endif
 /*
 * Memory Map Pool K
@@ -83,7 +83,7 @@
 * increasing "K" by 1 will double the amount of memory.
 */
 #ifndef MEM_MAP_POOL_K
-#define MEM_MAP_POOL_K (15ULL)
+#define MEM_MAP_POOL_K (17ULL)
 #endif
 
 /*
