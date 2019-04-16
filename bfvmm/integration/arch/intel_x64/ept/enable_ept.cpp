@@ -40,6 +40,13 @@ using namespace bfvmm::intel_x64;
 namespace test
 {
 
+#define ONE_EPT 1
+
+#if defined(ONE_EPT)
+bfn::once_flag flag;
+ept::mmap g_guest_map;
+#endif
+
 void
 test_hlt_delegate(bfobject *obj)
 {
@@ -53,6 +60,22 @@ public:
     explicit vcpu(vcpuid::type id) :
         bfvmm::intel_x64::vcpu{id}
     {
+
+#if defined(ONE_EPT)
+        bfn::call_once(flag, [&] {
+            ept::identity_map(
+                g_guest_map,
+                MAX_PHYS_ADDR
+            );
+        });
+
+        this->add_hlt_delegate(
+            hlt_delegate_t::create<test_hlt_delegate>()
+        );
+
+        this->set_eptp(g_guest_map);
+
+#else
         ept::identity_map(this->guest_map,
                           MAX_PHYS_ADDR);
 
@@ -62,7 +85,7 @@ public:
         );
 
         this->set_eptp(this->guest_map);
-
+#endif
         // We don't need to enable VPIDs here, they are already enabled in 
         // bfvmm/src/hve/arch/intel_x64/vcpu.cpp (vcpu::vcpu() constructor)
         //this->enable_vpid();
