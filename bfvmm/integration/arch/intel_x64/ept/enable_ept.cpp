@@ -39,8 +39,7 @@ using namespace bfvmm::intel_x64;
 
 namespace test
 {
-
-#define ONE_EPT 1
+//#define ONE_EPT 1
 
 #if defined(ONE_EPT)
 bfn::once_flag flag;
@@ -74,10 +73,12 @@ public:
         );
 
         this->set_eptp(g_guest_map);
-
 #else
         ept::identity_map(this->guest_map,
                           MAX_PHYS_ADDR);
+
+	ept::identity_map(this->guest_map, PCI_RESOURCE_MEM_START_ADDR,
+                          PCI_RESOURCE_MEM_END_ADDR);
 
 
         this->add_hlt_delegate(
@@ -86,6 +87,7 @@ public:
 
         this->set_eptp(this->guest_map);
 #endif
+
         // We don't need to enable VPIDs here, they are already enabled in 
         // bfvmm/src/hve/arch/intel_x64/vcpu.cpp (vcpu::vcpu() constructor)
         //this->enable_vpid();

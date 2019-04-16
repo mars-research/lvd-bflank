@@ -38,9 +38,11 @@
  * Note: defined in bytes (512GB by default)
  */
 #ifndef MAX_PHYS_ADDR
-#define MAX_PHYS_ADDR 0x8000000000*8
+#define MAX_PHYS_ADDR 0x8000000000
 #endif
 
+#define PCI_RESOURCE_MEM_START_ADDR	0x38000000000ULL
+#define PCI_RESOURCE_MEM_END_ADDR	(PCI_RESOURCE_MEM_START_ADDR + (512ULL << 30))
 /*
  * Bareflank Page Size
  *
