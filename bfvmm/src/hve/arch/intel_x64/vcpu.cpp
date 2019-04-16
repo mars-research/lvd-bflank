@@ -826,19 +826,21 @@ vcpu::dump_ept_pointers() {
         });
     }
 
-    auto map = this->map_hpa_4k<uint64_t>(eptp_list);
+    if(bfn::upper(eptp_list) != 0) {
+        auto map = this->map_hpa_4k<uint64_t>(eptp_list);
 
-    /* Dump as words (8 bytes) */
-    while ( current < 16 ) {
-        bfdebug_transaction(0, [&](std::string * msg) {
-            std::string ln = "eptp list entry:";
-            bfn::to_string(ln, current, 16);
-            ln += " "; 
-            bfn::to_string(ln, (unsigned long long)map.get()[current], 16);
-            bfdebug_info(0, ln.c_str(), msg); 
-        });
-        current ++; 
-    }
+        /* Dump as words (8 bytes) */
+        while ( current < 16 ) {
+            bfdebug_transaction(0, [&](std::string * msg) {
+                std::string ln = "eptp list entry:";
+                bfn::to_string(ln, current, 16);
+                ln += " "; 
+                bfn::to_string(ln, (unsigned long long)map.get()[current], 16);
+                bfdebug_info(0, ln.c_str(), msg); 
+            });
+            current ++; 
+        }
+    };
 
 }
 
