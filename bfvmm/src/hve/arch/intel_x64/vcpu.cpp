@@ -1044,7 +1044,10 @@ vcpu::dump_exception_stack() {
         bfdebug_transaction(0, [&](std::string * msg) {
             bferror_info(0, "Dump stack saved in the exception frame:", msg);
         });
-        dump_as_stack(&map.get()[(saved_rsp - stack)/sizeof(uint64_t)], saved_rsp); 
+
+	uint64_t offset = bfn::lower(stack_hpa); 
+
+        dump_as_stack(&map.get()[bfn::lower(saved_rsp)/sizeof(uint64_t)], saved_rsp); 
 
         /* RSP is pointing somewhere else... lets dump that somewhere else in 
          * case there is something useful there */
