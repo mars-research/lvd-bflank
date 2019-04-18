@@ -748,6 +748,9 @@ vcpu::dump_ept_entry(uint64_t gpa) {
     });
 
     {
+        if (hpa == 0) 
+            return; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pml4::index(gpa); 
         uint64_t entry = map.get()[index];
@@ -761,6 +764,9 @@ vcpu::dump_ept_entry(uint64_t gpa) {
 
 
     {
+        if (hpa == 0) 
+            return; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pdpt::index(gpa); 
         uint64_t entry = map.get()[index];
@@ -774,6 +780,9 @@ vcpu::dump_ept_entry(uint64_t gpa) {
 
 
     {
+        if (hpa == 0) 
+            return; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pd::index(gpa); 
         uint64_t entry = map.get()[index];
@@ -786,6 +795,9 @@ vcpu::dump_ept_entry(uint64_t gpa) {
     };
 
     {
+        if (hpa == 0) 
+            return; 
+
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pt::index(gpa); 
         uint64_t entry = map.get()[index];
