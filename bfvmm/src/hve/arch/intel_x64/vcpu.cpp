@@ -153,7 +153,9 @@ vcpu::vcpu(
 
     m_ept_handler{this},
     m_microcode_handler{this},
-    m_vpid_handler{this}
+    m_vpid_handler{this},
+    exits_total{0}
+    
 {
     using namespace vmcs_n;
     bfn::call_once(g_once_flag, setup);
@@ -973,7 +975,15 @@ vcpu::dump_stack() {
 
         return; 
     };
-   
+  
+    if (stack == 0) {
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bfdebug_info(0, "Stack pointer is NULL", msg); 
+        });
+
+        return; 
+    }; 
+
     auto map = this->map_gva_4k<uint64_t>(stack, size);
     dump_as_stack(&map.get()[0], stack); 
 }
@@ -1164,6 +1174,8 @@ vcpu::dump(const char *str)
     if (exit_reason::vm_entry_failure::is_enabled()) {
         m_vmcs.check();
     }
+
+    //dump_perf_counters();
 
     ::intel_x64::vmcs::debug::dump();
 

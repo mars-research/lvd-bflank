@@ -134,4 +134,16 @@ vmcs::check() const noexcept
     return true;
 }
 
+#if 0
+void
+vcpu::dump_perf_counters(void)
+{
+    bfdebug_transaction(0, [&](std::string * msg) {
+         bfdebug_subnhex(0, "total_exits", exits_total, msg);
+         exits_total = 0; 
+    });
+
+}
+#endif
+
 }

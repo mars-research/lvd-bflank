@@ -343,6 +343,7 @@ public:
     VIRTUAL void add_fini_delegate(const fini_delegate_t &d) noexcept
     { m_fini_delegates.push_front(std::move(d)); }
 
+
 private:
 
     vcpuid::type m_id;

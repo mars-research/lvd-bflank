@@ -137,6 +137,7 @@ public:
     ///
     VIRTUAL void hlt_delegate(bfobject *obj);
 
+
 private:
 
     void write_host_state();
@@ -233,6 +234,10 @@ public:
     VIRTUAL void dump_exception_stack();
 
     VIRTUAL void dump_instruction();
+
+#if 0    
+    VIRTUAL void dump_perf_counters(void); 
+#endif
 
     /// Dump State
     ///
@@ -1976,7 +1981,10 @@ public:
 
     /// @endcond
 
-public: 
+public:
+
+    uint64_t exits_total; 
+
     ept::mmap *get_ept_map(void) {
         return this->m_mmap; 
     }

@@ -91,4 +91,5 @@ vcpu::fini(bfobject *obj)
     m_is_initialized = false;
 }
 
+
 }

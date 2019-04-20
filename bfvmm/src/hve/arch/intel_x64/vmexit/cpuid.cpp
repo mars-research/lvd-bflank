@@ -91,6 +91,7 @@ handle_cpuid_0x4BF00011(vcpu *vcpu)
     ///
 
     bfdebug_info(0, "host os is" bfcolor_green " now " bfcolor_end "in a vm");
+    //vcpu->dump_perf_counters(); 
     //bfn::call_once(flag, [&] {
     //    vcpu->dump("Dump sound VMCS"); 
     //});
