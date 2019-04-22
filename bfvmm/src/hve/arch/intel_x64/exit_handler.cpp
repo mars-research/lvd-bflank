@@ -64,8 +64,8 @@ handle_exit(
 {
     guard_exceptions([&]() {
 
-//        if (vcpu)
-//            vcpu->exits_total ++; 
+        if (vcpu)
+	    vcpu->m_exits_total++;
 
         for (const auto &d : exit_handler->m_exit_handlers) {
             d(vcpu);

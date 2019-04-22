@@ -60,6 +60,7 @@ handle_cpuid_0x4BF00000(vcpu *vcpu)
     /// which means it can be used to ack safely from any application.
     ///
 
+    vcpu->dump_perf_counters();
     vcpu->set_rax(0x4BF00001);
     return vcpu->advance();
 }

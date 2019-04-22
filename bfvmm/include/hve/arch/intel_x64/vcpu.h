@@ -235,9 +235,7 @@ public:
 
     VIRTUAL void dump_instruction();
 
-#if 0    
     VIRTUAL void dump_perf_counters(void); 
-#endif
 
     /// Dump State
     ///
@@ -1982,9 +1980,6 @@ public:
     /// @endcond
 
 public:
-
-    uint64_t exits_total; 
-
     ept::mmap *get_ept_map(void) {
         return this->m_mmap; 
     }
@@ -2042,10 +2037,10 @@ private:
     vpid_handler m_vpid_handler;
 
 private:
-
     bool m_launched{false};
 public: 
     ept::mmap *m_mmap{};
+    uint64_t m_exits_total;
 };
 
 }
