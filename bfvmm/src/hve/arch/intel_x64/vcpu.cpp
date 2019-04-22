@@ -652,7 +652,8 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
     	});
     };
 
-    return hpa + bfn::lower(gpa); 
+    // if hpa is null, return null!
+    return hpa ? hpa + bfn::lower(gpa) : 0ul;
 };
 
 uint64_t
