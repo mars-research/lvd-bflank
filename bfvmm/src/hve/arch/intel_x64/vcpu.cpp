@@ -589,10 +589,10 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
             return 0; 
 
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
-        uint64_t index = ::x64::pml4::index(gpa); 
+        uint64_t index = ::intel_x64::ept::pml4::index(gpa); 
         uint64_t entry = map.get()[index];
 
-        hpa = ::x64::pml4::entry::phys_addr::get(entry);
+        hpa = ::intel_x64::ept::pml4::entry::phys_addr::get(entry);
 
         bfdebug_transaction(0, [&](std::string * msg) {
             bfdebug_subnhex(0, "eptl4 etnry", entry, msg);
@@ -606,10 +606,10 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
             return 0; 
 
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
-        uint64_t index = ::x64::pdpt::index(gpa); 
+        uint64_t index = ::intel_x64::ept::pdpt::index(gpa); 
         uint64_t entry = map.get()[index];
 
-        hpa = ::x64::pdpt::entry::phys_addr::get(entry);
+        hpa = ::intel_x64::ept::pdpt::entry::phys_addr::get(entry);
 
         bfdebug_transaction(0, [&](std::string * msg) {
             bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
@@ -623,10 +623,10 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
             return 0; 
 
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
-        uint64_t index = ::x64::pd::index(gpa); 
+        uint64_t index = ::intel_x64::ept::pd::index(gpa); 
         uint64_t entry = map.get()[index];
 
-        hpa = ::x64::pd::entry::phys_addr::get(entry);
+        hpa = ::intel_x64::ept::pd::entry::phys_addr::get(entry);
 
         bfdebug_transaction(0, [&](std::string * msg) {
             bfdebug_subnhex(0, "eptl2 etnry", entry, msg);
@@ -639,13 +639,15 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
             return 0; 
 
     	auto map = this->map_hpa_4k<uint64_t>(hpa);
-        uint64_t index = ::x64::pt::index(gpa); 
+        uint64_t index = ::intel_x64::ept::pt::index(gpa); 
         uint64_t entry = map.get()[index];
 
-        hpa = ::x64::pt::entry::phys_addr::get(entry);
+        hpa = ::intel_x64::ept::pt::entry::phys_addr::get(entry);
 
         bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "eptl1 etnry", entry, msg);
+            bfdebug_subnhex(0, "eptl1 entry", entry, msg);
+            bfdebug_subnhex(0, "eptl1 entry type", ::intel_x64::ept::pt::entry::memory_type::get(entry), msg);
+            bfdebug_subnhex(0, "eptl1 entry ipat", ::intel_x64::ept::pt::entry::ignore_pat::is_enabled(entry), msg);
             bfdebug_subnhex(0, "hpa (frame)", hpa, msg);
             bfdebug_subnhex(0, "hpa", hpa + bfn::lower(gpa), msg);
 

@@ -266,11 +266,19 @@ handle_cpuid_lcds_syscall_walk_gva(vcpu *vcpu)
 {
     uint64_t gva = vcpu->rbx();
     uint64_t cr3 = vcpu->rcx();
-    uint64_t verbose = vcpu->rdx();  
+    uint64_t verbose = vcpu->rdx(); 
+    uint64_t ept_index = vcpu->r08(); 
+
     unsigned long long eptp_list = ::intel_x64::vmcs::eptp_list_address::get();
 
+    if (bfn::upper(eptp_list) == 0) {
+        bfdebug_info(0, "EPTP list is 0"); 
+        return true;
+    }
+
+
     auto map = vcpu->map_hpa_4k<uint64_t>(eptp_list);
-    uint64_t eptp = bfn::upper(map.get()[1]);
+    uint64_t eptp = bfn::upper(map.get()[ept_index]);
 
     bfdebug_transaction(0, [&](std::string * msg) {
         bfdebug_subnhex(0, "Walk gva:", gva, msg);
@@ -296,6 +304,7 @@ handle_cpuid_lcds_syscall_walk_gva(vcpu *vcpu)
     //vcpu->set_rax(0x0);
     return vcpu->advance();
 }
+
 
 cpuid_handler::cpuid_handler(
     gsl::not_null<vcpu *> vcpu)
