@@ -268,6 +268,7 @@ handle_cpuid_lcds_syscall_walk_gva(vcpu *vcpu)
     uint64_t cr3 = vcpu->rcx();
     uint64_t verbose = vcpu->rdx(); 
     uint64_t ept_index = vcpu->r08(); 
+    uint64_t gpa; 
 
     unsigned long long eptp_list = ::intel_x64::vmcs::eptp_list_address::get();
 
@@ -286,11 +287,15 @@ handle_cpuid_lcds_syscall_walk_gva(vcpu *vcpu)
         bfdebug_subnhex(0, "eptp", eptp, msg); 
     });
 
-    uint64_t gpa = vcpu->lcd_gva_to_gpa(gva, cr3, eptp);  
+    if (cr3 == 0 ) {
+        gpa = gva; 
+    } else {
+        gpa = vcpu->lcd_gva_to_gpa(gva, cr3, eptp);  
 
-    bfdebug_transaction(0, [&](std::string * msg) {
-        bferror_subnhex(0, "gpa", gpa, msg);
-    });
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bferror_subnhex(0, "gpa", gpa, msg);
+        });
+    };
 
     uint64_t hpa = vcpu->lcd_gpa_to_hpa(gpa, eptp);
 
