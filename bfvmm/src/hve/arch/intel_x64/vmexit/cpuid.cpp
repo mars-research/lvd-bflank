@@ -310,6 +310,14 @@ handle_cpuid_lcds_syscall_walk_gva(vcpu *vcpu)
     return vcpu->advance();
 }
 
+static bool
+handle_cpuid_lcds_syscall_dump_perf(vcpu *vcpu)
+{
+    //vcpu->dump_instruction(); 
+    //vcpu->dump_perf_counters();
+    vcpu->set_rax(vcpu->m_exits_total);
+    return vcpu->advance();
+}
 
 cpuid_handler::cpuid_handler(
     gsl::not_null<vcpu *> vcpu)
@@ -368,6 +376,10 @@ cpuid_handler::cpuid_handler(
 
     this->add_emulator(
         0x4BF00036, handler_delegate_t::create<handle_cpuid_lcds_syscall_walk_gva>()
+    );
+
+    this->add_emulator(
+        0x4BF00037, handler_delegate_t::create<handle_cpuid_lcds_syscall_dump_perf>()
     );
 
 }
