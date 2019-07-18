@@ -1183,6 +1183,11 @@ vcpu::dump(const char *str)
     ::intel_x64::vmcs::debug::dump();
 
     dump_ept_pointers();
+    auto err_gpa = lcd_gva_to_gpa(guest_linear_address::get());
+    uint64_t err_hpa = lcd_gpa_to_hpa(err_gpa);
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "err_hpa", err_hpa, msg);
+    });
     dump_instruction(); 
     dump_stack();
     
