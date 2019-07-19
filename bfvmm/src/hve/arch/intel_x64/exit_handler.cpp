@@ -64,8 +64,11 @@ handle_exit(
 {
     guard_exceptions([&]() {
 
-        if (vcpu)
-	    vcpu->m_exits_total++;
+        if (vcpu) {
+            vcpu->m_exits_total++;
+            if(vmcs_n::exit_reason::basic_exit_reason::get() < 65)
+                vcpu->m_exits[vmcs_n::exit_reason::basic_exit_reason::get()] ++;
+        }
 
         for (const auto &d : exit_handler->m_exit_handlers) {
             d(vcpu);

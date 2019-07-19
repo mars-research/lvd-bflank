@@ -2041,6 +2041,8 @@ private:
 public: 
     ept::mmap *m_mmap{};
     uint64_t m_exits_total;
+    uint64_t m_exits[65];
+
 };
 
 }

@@ -310,12 +310,94 @@ handle_cpuid_lcds_syscall_walk_gva(vcpu *vcpu)
     return vcpu->advance();
 }
 
+static const char *bfdebug_exit_to_str(unsigned int i) {
+    switch(i) {
+        case 0: return "nmi";
+        case 1: return "external int";
+        case 2: return "triple fault";
+        case 3: return "init signal";
+        case 4: return "startup ipi";
+        case 5: return "smi";
+        case 6: return "other smi";
+        case 7: return "interrupt window";
+        case 8: return "nmi window";
+        case 9: return "task switch";
+        case 10: return "cpuid";
+        case 11: return "getsec";
+        case 12: return "hlt";
+        case 13: return "invd";
+        case 14: return "invlpg";
+        case 15: return "rdpmc";
+        case 16: return "rdtsc";
+        case 17: return "rsm";
+        case 18: return "vmcall";
+        case 19: return "vmclear";
+        case 20: return "vmlaunch";
+        case 21: return "vmptrld";
+        case 22: return "vmptrst";
+        case 23: return "vmread";
+        case 24: return "vmresume";
+        case 25: return "vmwrite";
+        case 26: return "vmxoff";
+        case 27: return "vmxon";
+        case 28: return "control-reg access";
+        case 29: return "mov dr";
+        case 30: return "i/o instr";
+        case 31: return "rdmsr";
+        case 32: return "wrmsr";
+        case 33: return "vm entry failure due to guest state";
+        case 34: return "vm entry failure due to msr loading";
+        case 35: return "35";
+        case 36: return "mwait";
+        case 37: return "monitor trap flag";
+        case 38: return "38";
+        case 39: return "monitor";
+        case 40: return "pause";
+        case 41: return "vm entry failure due to machine check";
+        case 42: return "42";
+        case 43: return "tpr below threshold";
+        case 44: return "apic access";
+        case 45: return "virtualized eoi";
+        case 46: return "access to idtr or gdtr";
+        case 47: return "access to ldtr or tr";
+        case 48: return "ept violation";
+        case 49: return "ept misconfiguration";
+        case 50: return "invept";
+        case 51: return "rdtscp";
+        case 52: return "vmx-preemption timer expired";
+        case 53: return "invvpid";
+        case 54: return "wbinvd";
+        case 55: return "xsetbv";
+        case 56: return "apic write";
+        case 57: return "rdrand";
+        case 58: return "invpcid";
+        case 59: return "vmfunc";
+        case 60: return "encls";
+        case 61: return "rdseed";
+        case 62: return "page modification log full";
+        case 63: return "xsaves";
+        case 64: return "xrstors";
+        default: return "unknown";
+    };
+};
+
 static bool
 handle_cpuid_lcds_syscall_dump_perf(vcpu *vcpu)
 {
     //vcpu->dump_instruction(); 
     //vcpu->dump_perf_counters();
     vcpu->set_rax(vcpu->m_exits_total);
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_info(0, "Dumping VM exits", msg); 
+        for (int i = 0; i < 65; i++) {
+            if(vcpu->m_exits[i]) {
+                bfdebug_subnhex(0, bfdebug_exit_to_str(i), vcpu->m_exits[i], msg);
+                vcpu->m_exits[i] = 0; 
+            }
+        }
+    });
+
+
     return vcpu->advance();
 }
 
