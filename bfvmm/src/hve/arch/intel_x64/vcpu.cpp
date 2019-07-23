@@ -577,7 +577,7 @@ vcpu::add_exit_handler(
 //==============================================================================
 
 uint64_t
-vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
+vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
 
     uint64_t hpa = eptp;  
    
@@ -597,9 +597,10 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
 
         hpa = ::intel_x64::ept::pml4::entry::phys_addr::get(entry);
 
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "eptl4 etnry", entry, msg);
-    	});
+        if (verbose)
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "eptl4 etnry", entry, msg);
+        	});
     };
 
 
@@ -614,9 +615,10 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
 
         hpa = ::intel_x64::ept::pdpt::entry::phys_addr::get(entry);
 
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
-    	});
+        if (verbose)
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
+        	});
     };
 
 
@@ -631,9 +633,10 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
 
         hpa = ::intel_x64::ept::pd::entry::phys_addr::get(entry);
 
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "eptl2 etnry", entry, msg);
-    	});
+        if (verbose)
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "eptl2 etnry", entry, msg);
+        	});
     };
 
     {
@@ -647,14 +650,15 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
 
         hpa = ::intel_x64::ept::pt::entry::phys_addr::get(entry);
 
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "eptl1 entry", entry, msg);
-            bfdebug_subnhex(0, "eptl1 entry type", ::intel_x64::ept::pt::entry::memory_type::get(entry), msg);
-            bfdebug_subnhex(0, "eptl1 entry ipat", ::intel_x64::ept::pt::entry::ignore_pat::is_enabled(entry), msg);
-            bfdebug_subnhex(0, "hpa (frame)", hpa, msg);
-            bfdebug_subnhex(0, "hpa", hpa + bfn::lower(gpa), msg);
+        if (verbose)
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "eptl1 entry", entry, msg);
+                bfdebug_subnhex(0, "eptl1 entry type", ::intel_x64::ept::pt::entry::memory_type::get(entry), msg);
+                bfdebug_subnhex(0, "eptl1 entry ipat", ::intel_x64::ept::pt::entry::ignore_pat::is_enabled(entry), msg);
+                bfdebug_subnhex(0, "hpa (frame)", hpa, msg);
+                bfdebug_subnhex(0, "hpa", hpa + bfn::lower(gpa), msg);
 
-    	});
+        	});
     };
 
     // if hpa is null, return null!
@@ -662,12 +666,12 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp) {
 };
 
 uint64_t
-vcpu::lcd_gpa_to_hpa(uint64_t gpa) {
-    return lcd_gpa_to_hpa(gpa, ::intel_x64::vmcs::ept_pointer::phys_addr::get());
+vcpu::lcd_gpa_to_hpa(uint64_t gpa, bool verbose) {
+    return lcd_gpa_to_hpa(gpa, ::intel_x64::vmcs::ept_pointer::phys_addr::get(), verbose);
 };
 
 uint64_t
-vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp) {
+vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose) {
 
     uint64_t gpa = cr3; 
     uint64_t hpa = 0; 
@@ -690,9 +694,10 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp) {
 
         gpa = ::x64::pml4::entry::phys_addr::get(entry);
 
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "ptl4 etnry", entry, msg);
-    	});
+        if (verbose)
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "ptl4 etnry", entry, msg);
+    	    });
     };
 
 
@@ -708,9 +713,10 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp) {
 
         gpa = ::x64::pdpt::entry::phys_addr::get(entry);
 
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "ptl3 etnry", entry, msg);
-    	});
+        if (verbose)
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "ptl3 etnry", entry, msg);
+        	});
     };
 
 
@@ -726,21 +732,22 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp) {
 
         gpa = ::x64::pd::entry::phys_addr::get(entry);
 
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_subnhex(0, "ptl2 etnry", entry, msg);
-            bfdebug_subnhex(0, "gpa (frame)", gpa, msg);
-            bfdebug_subnhex(0, "gpa", gpa + bfn::lower(gva, ::x64::pd::from), msg);
-    	});
+        if (verbose)
+            bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "ptl2 etnry", entry, msg);
+                bfdebug_subnhex(0, "gpa (frame)", gpa, msg);
+                bfdebug_subnhex(0, "gpa", gpa + bfn::lower(gva, ::x64::pd::from), msg);
+    	    });
     };
 
     return gpa + bfn::lower(gva, ::x64::pd::from); 
 };
 
 uint64_t
-vcpu::lcd_gva_to_gpa(uint64_t gva) {
+vcpu::lcd_gva_to_gpa(uint64_t gva, bool verbose) {
     return lcd_gva_to_gpa(gva, 
                 ::intel_x64::vmcs::guest_cr3::get(), 
-                ::intel_x64::vmcs::ept_pointer::phys_addr::get());
+                ::intel_x64::vmcs::ept_pointer::phys_addr::get(), verbose);
 };
 
 void 
@@ -882,8 +889,8 @@ vcpu::dump_instruction(uint64_t instr_gva) {
 
     bfdebug_transaction(0, [&](std::string * msg) {
         bferror_subnhex(0, "instr_hpa", instr_hpa, msg);
-        bferror_subnhex(0, "bfn::upper(stack_hpa)", bfn::upper(instr_hpa), msg);
-        bferror_subnhex(0, "bfn::lower(stack_hpa)", bfn::lower(instr_hpa), msg);
+        bferror_subnhex(0, "bfn::upper(instr_hpa)", bfn::upper(instr_hpa), msg);
+        bferror_subnhex(0, "bfn::lower(instr_hpa)", bfn::lower(instr_hpa), msg);
     });
 
     if (instr_hpa == 0) {
@@ -1196,6 +1203,7 @@ vcpu::dump(const char *str)
     dump_instruction(this->rip()); 
     dump_stack();
     
+    bfdebug_info(0, "Done dumpint state");
 }
 
 void
