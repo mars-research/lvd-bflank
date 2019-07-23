@@ -227,6 +227,10 @@ public:
 
     VIRTUAL void dump_ept_pointers();
 
+    VIRTUAL void dump_trace_log();
+
+    VIRTUAL void dump_ring_trace_buffer(void *this_ring, unsigned long head_idx, unsigned long num_trace_entries);
+
     VIRTUAL void dump_as_stack(uint64_t *stack_hva, uint64_t stack); 
 
     VIRTUAL void dump_stack();

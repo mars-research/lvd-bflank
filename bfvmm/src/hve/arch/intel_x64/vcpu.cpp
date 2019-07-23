@@ -871,6 +871,197 @@ vcpu::dump_ept_pointers() {
 
 }
 
+#define PROC_NAME_MAX   16
+#define IF_FLAG	        (1 << 9)
+
+#define IN_IRQ_SHIFT        0
+#define IN_SOFTIRQ_SHIFT    1
+#define IN_NMI_SHIFT        2
+
+#define IN_IRQ              (1 << IN_IRQ_SHIFT)
+#define IN_SOFTIRQ          (1 << IN_SOFTIRQ_SHIFT)
+#define IN_NMI              (1 << IN_NMI_SHIFT)
+
+#define EVENT_XMIT                      1
+#define EVENT_MSIX_HANDLER              2
+#define EVENT_NAPI_COMPLETE_DONE        3
+#define EVENT_IRQ                       4
+#define EVENT_NMI                       5
+#define EVENT_EXCEPTION                 6
+#define EVENT_IRQ_EXIT                  7
+#define EVENT_SOFTIRQ_POLL              8
+#define EVENT_NET_RX_ACTION	            9
+#define EVENT_VMFUNC_TRAMP_ENTRY        10
+#define EVENT_VMFUNC_TRAMP_EXIT	        11
+#define EVENT_VMFUNC_SBOARD_KLCD_ENTER  12
+#define EVENT_VMFUNC_SBOARD_KLCD_LEAVE  13
+#define EVENT_DO_PAGE_FAULT             14
+#define EVENT_DO_PAGE_FAULT_LEAVE       15
+#define EVENT_DO_INT3                   16
+#define EVENT_DO_INT3_LEAVE             17
+
+
+struct ring_trace_entry {
+	unsigned long rip;
+	unsigned long eflags;
+	unsigned long rsp;
+	unsigned long rdi;
+	unsigned long lcd_stack;
+	unsigned long gsbase;
+	unsigned char context;
+	unsigned char lcd_stack_bit;
+	unsigned char lcd_nc;
+	unsigned short pid;
+	unsigned type;
+	unsigned orig_type;
+	char name[PROC_NAME_MAX];
+};
+
+static const char *event_type_to_string(unsigned type)
+{
+	switch (type) {
+		case EVENT_XMIT:
+			return "XMIT";
+
+		case EVENT_MSIX_HANDLER:
+			return "MSIX_HANDLER";
+
+		case EVENT_NAPI_COMPLETE_DONE:
+			return "NAPI_COMP_DONE";
+
+		case EVENT_IRQ:
+			return "IRQ";
+
+		case EVENT_NMI:
+			return "NMI";
+
+		case EVENT_EXCEPTION:
+			return "EXCEPTION";
+
+		case EVENT_IRQ_EXIT:
+			return "IRQ_EXIT";
+
+		case EVENT_SOFTIRQ_POLL:
+			return "SOFTIRQ_POLL";
+
+		case EVENT_NET_RX_ACTION:
+			return "NET_RX_ACTION";
+
+		case EVENT_VMFUNC_TRAMP_ENTRY:
+			return "TRAMP_ENTRY";
+
+		case EVENT_VMFUNC_TRAMP_EXIT:
+			return "TRAMP_EXIT";
+
+		case EVENT_VMFUNC_SBOARD_KLCD_ENTER:
+			return "SBOARD_ENTER";
+
+		case EVENT_VMFUNC_SBOARD_KLCD_LEAVE:
+			return "SBOARD_LEAVE";
+		default:
+			return "Undefined item";
+	}
+}
+
+void vcpu::dump_ring_trace_buffer(void *this_ring, 
+                    unsigned long head_idx, 
+                    unsigned long num_trace_entries) 
+{
+	struct ring_trace_entry *trace_entries = (struct ring_trace_entry*) this_ring;
+	int i;
+    auto id = this->id();
+
+	for (i = 0; i < num_trace_entries; i++, head_idx--) {
+		struct ring_trace_entry *entry = &trace_entries[head_idx % num_trace_entries];
+//		if (i == 0)
+//			printk("head ==> ");
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            char buf[512] = {0};
+#if 0
+            std::string ln = "type: ";
+            ln += event_type_to_string(entry->type);
+            ln += "(";
+            bfn::to_string(ln, entry->type, 16);
+            ln += ") cpu: ";
+            bfn::to_string(ln, this->id(), 10);
+#endif
+            sprintf(buf, "type:%16s(%x) cpu: %lu [%c|%c|%c] comm: %s pid: %d rip: %16lx rsp: %16lx "
+				"rdi: %09lx gsbase: %16lx lcd_stack: %16lx[bmap: %x nc:%u] "
+				"eflags: %08lx [IF: %d]\n",
+				event_type_to_string(entry->type),
+				entry->type,
+				id,
+				entry->context & (IN_NMI) ? 'N' : '-',
+				entry->context & (IN_SOFTIRQ) ? 'S' : '-',
+				entry->context & (IN_IRQ) ? 'I' : '-',
+				entry->name, entry->pid, entry->rip,
+				entry->rsp, entry->rdi, entry->gsbase, entry->lcd_stack,
+				entry->lcd_stack_bit, entry->lcd_nc, entry->eflags,
+				!!(entry->eflags & IF_FLAG));
+            bfdebug_info(0, buf, msg);
+        });
+#if 0
+		printk("type:%16s(%x) cpu: %d [%c|%c|%c] comm: %s pid: %d rip: %16lx rsp: %16lx "
+				"rdi: %09lx gsbase: %16lx lcd_stack: %16lx[bmap: %x nc:%u] "
+				"eflags: %08lx [IF: %d]\n",
+				event_type_to_string(entry->type),
+				entry->type,
+				this->id(),
+				entry->context & (IN_NMI) ? 'N' : '-',
+				entry->context & (IN_SOFTIRQ) ? 'S' : '-',
+				entry->context & (IN_IRQ) ? 'I' : '-',
+				entry->name, entry->pid, entry->rip,
+				entry->rsp, entry->rdi, entry->gsbase, entry->lcd_stack,
+				entry->lcd_stack_bit, entry->lcd_nc, entry->eflags,
+				!!(entry->eflags & IF_FLAG));
+#endif
+	}
+}
+
+void 
+vcpu::dump_trace_log() {
+
+    unsigned long eptp_list = ::intel_x64::vmcs::eptp_list_address::get();
+
+    if(bfn::upper(eptp_list) == 0) {
+        bfdebug_info(0, "EPT list pointer is NULL"); 
+        return;
+    };
+
+    auto map = this->map_hpa_4k<uint64_t>(eptp_list);
+
+    uint64_t trace_buffer_gva = map.get()[3];
+    uint64_t trace_buffer_pages = map.get()[4];
+    uint64_t trace_ring_head = map.get()[5];
+
+#define PAGE_SIZE   4096
+    uint64_t trace_buffer_size = trace_buffer_pages * PAGE_SIZE;
+
+    if(bfn::upper(trace_buffer_gva) == 0) {
+        bfdebug_info(0, "Trace buffer pointer is NULL"); 
+        return;
+    };
+
+    if(bfn::upper(trace_buffer_size) == 0) {
+        bfdebug_info(0, "Trace buffer size is NULL"); 
+        return;
+    };
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "Mapping trace buffer gpa:", trace_buffer_gva, msg);
+        bferror_subnhex(0, "size (pages):", trace_buffer_pages, msg);
+    });
+
+    auto map_buffer = this->map_gva_4k<uint64_t>(trace_buffer_gva, trace_buffer_size);
+    // continue here
+    //some_type = (some_type) &map_buffer.get()[0];
+    void *entries = (void *) &map_buffer.get()[0];
+
+    dump_ring_trace_buffer(entries, trace_ring_head, trace_buffer_size / sizeof(struct ring_trace_entry));
+
+    return;
+}
 
 void 
 vcpu::dump_instruction(uint64_t instr_gva) {
@@ -1203,6 +1394,8 @@ vcpu::dump(const char *str)
     dump_instruction(this->rip()); 
     dump_stack();
     
+    dump_trace_log();
+
     bfdebug_info(0, "Done dumpint state");
 }
 
