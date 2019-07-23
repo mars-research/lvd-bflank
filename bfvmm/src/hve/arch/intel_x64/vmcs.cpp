@@ -137,10 +137,15 @@ vmcs::check() const noexcept
 void
 vcpu::dump_perf_counters(void)
 {
+
+#ifdef BF_COUNT_EXTIS
     bfdebug_transaction(0, [&](std::string * msg) {
          bfdebug_subnhex(0, "total_exits", m_exits_total, msg);
     });
     m_exits_total = 0;
+#else
+    bfdebug_info(0, "VM exit counting is not supported (recompile with BF_COUNT_EXTIS)");	
+#endif
 }
 
 }

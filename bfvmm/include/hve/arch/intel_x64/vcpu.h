@@ -233,7 +233,7 @@ public:
 
     VIRTUAL void dump_exception_stack();
 
-    VIRTUAL void dump_instruction();
+    VIRTUAL void dump_instruction(uint64_t instr_gva);
 
     VIRTUAL void dump_perf_counters(void); 
 
@@ -2040,9 +2040,10 @@ private:
     bool m_launched{false};
 public: 
     ept::mmap *m_mmap{};
+#ifdef BF_COUNT_EXTIS
     uint64_t m_exits_total;
     uint64_t m_exits[65];
-
+#endif
 };
 
 }

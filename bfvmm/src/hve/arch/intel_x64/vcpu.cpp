@@ -153,9 +153,12 @@ vcpu::vcpu(
 
     m_ept_handler{this},
     m_microcode_handler{this},
-    m_vpid_handler{this},
+    m_vpid_handler{this}
+
+#ifdef BF_COUNT_EXTIS
+    ,
     m_exits_total{0}
-    
+#endif
 {
     using namespace vmcs_n;
     bfn::call_once(g_once_flag, setup);
@@ -863,9 +866,8 @@ vcpu::dump_ept_pointers() {
 
 
 void 
-vcpu::dump_instruction() {
+vcpu::dump_instruction(uint64_t instr_gva) {
     /* Assume that entire stack page is mapped */
-    unsigned long long instr_gva = this->rip(); 
     unsigned long long size = 16; 
     unsigned long long current_address = instr_gva;
 
@@ -1052,6 +1054,9 @@ vcpu::dump_exception_stack() {
         bferror_subnhex(0, "ss",  map.get()[offset/sizeof(uint64_t) + 6], msg);
     });
 
+    /* Dump instruction pointed by the RIP onthe frame */
+    dump_instruction(map.get()[offset/sizeof(uint64_t) + 2]);
+
 //    bfdebug_transaction(0, [&](std::string * msg) {
 //        bferror_subnhex(0, "s1",  map.get()[offset/sizeof(uint64_t) + 7], msg);
 //        bferror_subnhex(0, "s2",  map.get()[offset/sizeof(uint64_t) + 8], msg);
@@ -1188,7 +1193,7 @@ vcpu::dump(const char *str)
     bfdebug_transaction(0, [&](std::string * msg) {
         bferror_subnhex(0, "err_hpa", err_hpa, msg);
     });
-    dump_instruction(); 
+    dump_instruction(this->rip()); 
     dump_stack();
     
 }

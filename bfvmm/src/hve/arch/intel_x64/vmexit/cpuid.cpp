@@ -195,7 +195,7 @@ handle_cpuid_lcds_syscall_dump_stack(vcpu *vcpu)
 static bool
 handle_cpuid_lcds_syscall_abort(vcpu *vcpu)
 {
-    vcpu->dump_instruction(); 
+    vcpu->dump_instruction(vcpu->rip()); 
     vcpu->dump_stack(); 
     //vcpu->dump(); 
     vcpu->set_rax(0x0);
@@ -236,10 +236,10 @@ handle_cpuid_lcds_syscall_map_page(vcpu *vcpu)
 }
 
 static bool
-handle_cpuid_lcds_syscall_debug_lcd(vcpu *vcpu)
+handle_cpuid_lcds_syscall_illegal_exception(vcpu *vcpu)
 {
 
-    /* We have an exception from LCD
+    /* We have an exception m LCD
      * 
      * Our stack 
      * 
@@ -256,6 +256,45 @@ handle_cpuid_lcds_syscall_debug_lcd(vcpu *vcpu)
     vcpu->dump("Dumping illegal exception from LCD");
 
     vcpu->dump_exception_stack(); 
+    vcpu->set_rax(0x0);
+    //vcpu->halt();
+    return true; 
+}
+
+static bool
+handle_cpuid_lcds_syscall_illegal_nmi(vcpu *vcpu)
+{
+
+    /* We have an exception m LCD
+     * 
+     * Our stack 
+     * 
+     *  ------------------------
+     *     exception frame 
+     *  -----------------------
+     *     rax
+     *
+     */
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_info(0, "Illegal NMI while inside LCD", msg); 
+    });
+
+    vcpu->dump("Dumping illegal NMI while inside LCD");
+
+    vcpu->dump_exception_stack(); 
+    vcpu->set_rax(0x0);
+    //vcpu->halt();
+    return true; 
+}
+
+static bool
+handle_cpuid_lcds_syscall_halt(vcpu *vcpu)
+{
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_info(0, "Halting the CPU", msg); 
+    });
+
     vcpu->set_rax(0x0);
     vcpu->halt();
     return true; 
@@ -384,6 +423,8 @@ static const char *bfdebug_exit_to_str(unsigned int i) {
 static bool
 handle_cpuid_lcds_syscall_dump_perf(vcpu *vcpu)
 {
+
+#ifdef BF_COUNT_EXTIS
     //vcpu->dump_instruction(); 
     //vcpu->dump_perf_counters();
     vcpu->set_rax(vcpu->m_exits_total);
@@ -396,7 +437,9 @@ handle_cpuid_lcds_syscall_dump_perf(vcpu *vcpu)
             }
         }
     });
-
+#else
+   bfdebug_info(0, "VM exit counting is not supported (recompile with BF_COUNT_EXTIS)"); 
+#endif
 
     return vcpu->advance();
 }
@@ -453,7 +496,7 @@ cpuid_handler::cpuid_handler(
     );
 
     this->add_emulator(
-        0x4BF00035, handler_delegate_t::create<handle_cpuid_lcds_syscall_debug_lcd>()
+        0x4BF00035, handler_delegate_t::create<handle_cpuid_lcds_syscall_illegal_exception>()
     );
 
     this->add_emulator(
@@ -463,6 +506,16 @@ cpuid_handler::cpuid_handler(
     this->add_emulator(
         0x4BF00037, handler_delegate_t::create<handle_cpuid_lcds_syscall_dump_perf>()
     );
+
+    this->add_emulator(
+        0x4BF00038, handler_delegate_t::create<handle_cpuid_lcds_syscall_illegal_nmi>()
+    );
+
+    this->add_emulator(
+        0x4BF00039, handler_delegate_t::create<handle_cpuid_lcds_syscall_halt>()
+    );
+
+
 
 }
 
