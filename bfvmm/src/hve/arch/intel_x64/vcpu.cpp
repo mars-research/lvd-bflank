@@ -348,18 +348,18 @@ vcpu::write_guest_state()
             bfdebug_subnhex(1, "ds",  ds::get(), msg);
             bfdebug_subnhex(1, "fs",  fs::get(), msg);
             bfdebug_subnhex(1, "gs",  gs::get(), msg);
-	
- 	    bfdebug_subnhex(1, "ldtr",  ldtr::get(), msg);
+    
+        bfdebug_subnhex(1, "ldtr",  ldtr::get(), msg);
             bfdebug_subnhex(1, "tr",  tr::get(), msg);
-	
-	    bfdebug_subnhex(1, "msrs::ia32_debugctl",  msrs::ia32_debugctl::get(), msg);
+    
+        bfdebug_subnhex(1, "msrs::ia32_debugctl",  msrs::ia32_debugctl::get(), msg);
             bfdebug_subnhex(1, "::x64::msrs::ia32_pat",  ::x64::msrs::ia32_pat::get(), msg);
-	    bfdebug_subnhex(1, "msrs::ia32_efer",  msrs::ia32_efer::get(), msg);
+        bfdebug_subnhex(1, "msrs::ia32_efer",  msrs::ia32_efer::get(), msg);
     });
 
 
     if (arch_perf_monitoring::eax::version_id::get() >= 2) {
-    	bfdebug_transaction(1, [&](std::string * msg) {
+        bfdebug_transaction(1, [&](std::string * msg) {
             bfdebug_subnhex(1, "msrs::ia32_perf_global_ctrl",  msrs::ia32_perf_global_ctrl::get(), msg);
         });
     }
@@ -399,16 +399,16 @@ vcpu::write_guest_state()
             bfdebug_subnhex(1, "ldtr base",  ldtr_index != 0 ? guest_gdt.base(ldtr_index) : 0, msg);
             bfdebug_subnhex(1, "tr base",  tr_index != 0 ? guest_gdt.base(tr_index) : 0, msg);
 
-	    bfdebug_subnhex(1, "cr0",  cr0::get() | ::intel_x64::msrs::ia32_vmx_cr0_fixed0::get(), msg);
-	    bfdebug_subnhex(1, "cr3",  cr3::get(), msg);
-	    bfdebug_subnhex(1, "cr4",  cr4::get() | ::intel_x64::msrs::ia32_vmx_cr4_fixed0::get(), msg);
-	    bfdebug_subnhex(1, "dr7",  dr7::get(), msg);
+        bfdebug_subnhex(1, "cr0",  cr0::get() | ::intel_x64::msrs::ia32_vmx_cr0_fixed0::get(), msg);
+        bfdebug_subnhex(1, "cr3",  cr3::get(), msg);
+        bfdebug_subnhex(1, "cr4",  cr4::get() | ::intel_x64::msrs::ia32_vmx_cr4_fixed0::get(), msg);
+        bfdebug_subnhex(1, "dr7",  dr7::get(), msg);
 
-	    bfdebug_subnhex(1, "rflags", ::x64::rflags::get(), msg);
+        bfdebug_subnhex(1, "rflags", ::x64::rflags::get(), msg);
 
-	    bfdebug_subnhex(1, "sysenter cs", msrs::ia32_sysenter_cs::get(), msg);
-	    bfdebug_subnhex(1, "sysenter esp", msrs::ia32_sysenter_esp::get(), msg);
-	    bfdebug_subnhex(1, "sysenter eip", msrs::ia32_sysenter_eip::get(), msg);
+        bfdebug_subnhex(1, "sysenter cs", msrs::ia32_sysenter_cs::get(), msg);
+        bfdebug_subnhex(1, "sysenter esp", msrs::ia32_sysenter_esp::get(), msg);
+        bfdebug_subnhex(1, "sysenter eip", msrs::ia32_sysenter_eip::get(), msg);
 
     });
 
@@ -513,7 +513,7 @@ vcpu::run_delegate(bfobject *obj)
         m_launched = true;
 
         try {
-            bfdebug_info(0, "launched vmm"); 	
+            bfdebug_info(0, "launched vmm");    
             m_vmcs.load();
             m_vmcs.launch();
         }
@@ -591,7 +591,7 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
         if(hpa == 0)
             return 0; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::intel_x64::ept::pml4::index(gpa); 
         uint64_t entry = map.get()[index];
 
@@ -600,7 +600,7 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
         if (verbose)
             bfdebug_transaction(0, [&](std::string * msg) {
                 bfdebug_subnhex(0, "eptl4 etnry", entry, msg);
-        	});
+            });
     };
 
 
@@ -609,7 +609,7 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
         if(hpa == 0)
             return 0; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::intel_x64::ept::pdpt::index(gpa); 
         uint64_t entry = map.get()[index];
 
@@ -618,7 +618,7 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
         if (verbose)
             bfdebug_transaction(0, [&](std::string * msg) {
                 bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
-        	});
+            });
     };
 
 
@@ -627,7 +627,7 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
         if(hpa == 0)
             return 0; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::intel_x64::ept::pd::index(gpa); 
         uint64_t entry = map.get()[index];
 
@@ -636,7 +636,7 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
         if (verbose)
             bfdebug_transaction(0, [&](std::string * msg) {
                 bfdebug_subnhex(0, "eptl2 etnry", entry, msg);
-        	});
+            });
     };
 
     {
@@ -644,7 +644,7 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
         if(hpa == 0)
             return 0; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::intel_x64::ept::pt::index(gpa); 
         uint64_t entry = map.get()[index];
 
@@ -658,7 +658,7 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
                 bfdebug_subnhex(0, "hpa (frame)", hpa, msg);
                 bfdebug_subnhex(0, "hpa", hpa + bfn::lower(gpa), msg);
 
-        	});
+            });
     };
 
     // if hpa is null, return null!
@@ -688,7 +688,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose) {
         if(hpa == 0)
             return 0; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pml4::index(gva); 
         uint64_t entry = map.get()[index];
 
@@ -697,7 +697,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose) {
         if (verbose)
             bfdebug_transaction(0, [&](std::string * msg) {
                 bfdebug_subnhex(0, "ptl4 etnry", entry, msg);
-    	    });
+            });
     };
 
 
@@ -707,7 +707,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose) {
         if(hpa == 0)
             return 0; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pdpt::index(gva); 
         uint64_t entry = map.get()[index];
 
@@ -716,7 +716,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose) {
         if (verbose)
             bfdebug_transaction(0, [&](std::string * msg) {
                 bfdebug_subnhex(0, "ptl3 etnry", entry, msg);
-        	});
+            });
     };
 
 
@@ -726,7 +726,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose) {
         if(hpa == 0)
             return 0; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pd::index(gva); 
         uint64_t entry = map.get()[index];
 
@@ -737,7 +737,7 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose) {
                 bfdebug_subnhex(0, "ptl2 etnry", entry, msg);
                 bfdebug_subnhex(0, "gpa (frame)", gpa, msg);
                 bfdebug_subnhex(0, "gpa", gpa + bfn::lower(gva, ::x64::pd::from), msg);
-    	    });
+            });
     };
 
     return gpa + bfn::lower(gva, ::x64::pd::from); 
@@ -766,7 +766,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
         if (hpa == 0) 
             return; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pml4::index(gpa); 
         uint64_t entry = map.get()[index];
 
@@ -774,7 +774,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
 
         bfdebug_transaction(0, [&](std::string * msg) {
             bfdebug_subnhex(0, "eptl4 etnry", entry, msg);
-    	});
+        });
     };
 
 
@@ -782,7 +782,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
         if (hpa == 0) 
             return; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pdpt::index(gpa); 
         uint64_t entry = map.get()[index];
 
@@ -790,7 +790,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
 
         bfdebug_transaction(0, [&](std::string * msg) {
             bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
-    	});
+        });
     };
 
 
@@ -798,7 +798,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
         if (hpa == 0) 
             return; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pd::index(gpa); 
         uint64_t entry = map.get()[index];
 
@@ -806,14 +806,14 @@ vcpu::dump_ept_entry(uint64_t gpa) {
 
         bfdebug_transaction(0, [&](std::string * msg) {
             bfdebug_subnhex(0, "eptl2 etnry", entry, msg);
-    	});
+        });
     };
 
     {
         if (hpa == 0) 
             return; 
 
-    	auto map = this->map_hpa_4k<uint64_t>(hpa);
+        auto map = this->map_hpa_4k<uint64_t>(hpa);
         uint64_t index = ::x64::pt::index(gpa); 
         uint64_t entry = map.get()[index];
 
@@ -823,7 +823,7 @@ vcpu::dump_ept_entry(uint64_t gpa) {
             bfdebug_subnhex(0, "eptl1 etnry", entry, msg);
             bfdebug_subnhex(0, "hpa", hpa, msg);
 
-    	});
+        });
     };
 
 }
@@ -847,8 +847,8 @@ vcpu::dump_ept_pointers() {
     
     if (this->m_mmap->eptp() != eptp_hpa) {
         bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_info(0, "vcpu's EPT pointer doesn't match hardware (VMFUNC'ed?)", msg); 
-            bfdebug_subnhex(0, "vcpu's EPT poiner", this->m_mmap->eptp(), msg); 
+            bfdebug_info(0, "host EPT pointer doesn't match hardware (VMFUNC'ed?)", msg); 
+            bfdebug_subnhex(0, "host EPT poiner", this->m_mmap->eptp(), msg); 
             bfdebug_subnhex(0, "hardware EPT poiner", eptp_hpa, msg);
         });
     }
@@ -872,7 +872,7 @@ vcpu::dump_ept_pointers() {
 }
 
 #define PROC_NAME_MAX   16
-#define IF_FLAG	        (1 << 9)
+#define IF_FLAG         (1 << 9)
 
 #define IN_IRQ_SHIFT        0
 #define IN_SOFTIRQ_SHIFT    1
@@ -890,94 +890,116 @@ vcpu::dump_ept_pointers() {
 #define EVENT_EXCEPTION                 6
 #define EVENT_IRQ_EXIT                  7
 #define EVENT_SOFTIRQ_POLL              8
-#define EVENT_NET_RX_ACTION	            9
+#define EVENT_NET_RX_ACTION             9
 #define EVENT_VMFUNC_TRAMP_ENTRY        10
-#define EVENT_VMFUNC_TRAMP_EXIT	        11
+#define EVENT_VMFUNC_TRAMP_EXIT         11
 #define EVENT_VMFUNC_SBOARD_KLCD_ENTER  12
 #define EVENT_VMFUNC_SBOARD_KLCD_LEAVE  13
 #define EVENT_DO_PAGE_FAULT             14
 #define EVENT_DO_PAGE_FAULT_LEAVE       15
 #define EVENT_DO_INT3                   16
 #define EVENT_DO_INT3_LEAVE             17
+#define EVENT_NMI_LEAVE                 18
+#define EVENT_NMI_FULL                  19
+
 
 
 struct ring_trace_entry {
-	unsigned long rip;
-	unsigned long eflags;
-	unsigned long rsp;
-	unsigned long rdi;
-	unsigned long lcd_stack;
-	unsigned long gsbase;
-	unsigned char context;
-	unsigned char lcd_stack_bit;
-	unsigned char lcd_nc;
-	unsigned short pid;
-	unsigned type;
-	unsigned orig_type;
-	char name[PROC_NAME_MAX];
+    unsigned long rip;
+    unsigned long eflags;
+    unsigned long rsp;
+    unsigned long rdi;
+    unsigned long lcd_stack;
+    unsigned long gsbase;
+    unsigned char context;
+    unsigned char lcd_stack_bit;
+    unsigned char lcd_nc;
+    unsigned short pid;
+    unsigned type;
+    unsigned orig_type;
+    char name[PROC_NAME_MAX];
 };
 
 static const char *event_type_to_string(unsigned type)
 {
-	switch (type) {
-		case EVENT_XMIT:
-			return "XMIT";
+    switch (type) {
+        case EVENT_XMIT:
+            return "XMIT";
 
-		case EVENT_MSIX_HANDLER:
-			return "MSIX_HANDLER";
+        case EVENT_MSIX_HANDLER:
+            return "MSIX_HANDLER";
 
-		case EVENT_NAPI_COMPLETE_DONE:
-			return "NAPI_COMP_DONE";
+        case EVENT_NAPI_COMPLETE_DONE:
+            return "NAPI_COMP_DONE";
 
-		case EVENT_IRQ:
-			return "IRQ";
+        case EVENT_IRQ:
+            return "IRQ";
 
-		case EVENT_NMI:
-			return "NMI";
+        case EVENT_NMI:
+            return "NMI";
 
-		case EVENT_EXCEPTION:
-			return "EXCEPTION";
+        case EVENT_EXCEPTION:
+            return "EXCEPTION";
 
-		case EVENT_IRQ_EXIT:
-			return "IRQ_EXIT";
+        case EVENT_IRQ_EXIT:
+            return "IRQ_EXIT";
 
-		case EVENT_SOFTIRQ_POLL:
-			return "SOFTIRQ_POLL";
+        case EVENT_SOFTIRQ_POLL:
+            return "SOFTIRQ_POLL";
 
-		case EVENT_NET_RX_ACTION:
-			return "NET_RX_ACTION";
+        case EVENT_NET_RX_ACTION:
+            return "NET_RX_ACTION";
 
-		case EVENT_VMFUNC_TRAMP_ENTRY:
-			return "TRAMP_ENTRY";
+        case EVENT_VMFUNC_TRAMP_ENTRY:
+            return "TRAMP_ENTRY";
 
-		case EVENT_VMFUNC_TRAMP_EXIT:
-			return "TRAMP_EXIT";
+        case EVENT_VMFUNC_TRAMP_EXIT:
+            return "TRAMP_EXIT";
 
-		case EVENT_VMFUNC_SBOARD_KLCD_ENTER:
-			return "SBOARD_ENTER";
+        case EVENT_VMFUNC_SBOARD_KLCD_ENTER:
+            return "SBOARD_ENTER";
 
-		case EVENT_VMFUNC_SBOARD_KLCD_LEAVE:
-			return "SBOARD_LEAVE";
-		default:
-			return "Undefined item";
-	}
+        case EVENT_VMFUNC_SBOARD_KLCD_LEAVE:
+            return "SBOARD_LEAVE";
+
+        case EVENT_DO_PAGE_FAULT:
+            return "EVENT_DO_PAGE_FAULT";
+
+        case EVENT_DO_PAGE_FAULT_LEAVE:
+            return "EVENT_DO_PAGE_FAULT_LEAVE";
+
+        case EVENT_DO_INT3:
+            return "EVENT_DO_INT3";
+
+        case EVENT_DO_INT3_LEAVE: 
+            return "EVENT_DO_INT3_LEAVE";
+
+        case EVENT_NMI_LEAVE:
+            return "EVENT_NMI_LEAVE";
+
+        case EVENT_NMI_FULL:
+            return "EVENT_NMI_FULL";
+
+        default:
+            return "Undefined item";
+    }
 }
 
 void vcpu::dump_ring_trace_buffer(void *this_ring, 
                     unsigned long head_idx, 
                     unsigned long num_trace_entries) 
 {
-	struct ring_trace_entry *trace_entries = (struct ring_trace_entry*) this_ring;
-	int i;
+    struct ring_trace_entry *trace_entries = (struct ring_trace_entry*) this_ring;
+    int i;
     auto id = this->id();
 
-	for (i = 0; i < num_trace_entries; i++, head_idx--) {
-		struct ring_trace_entry *entry = &trace_entries[head_idx % num_trace_entries];
-//		if (i == 0)
-//			printk("head ==> ");
+    for (i = 0; i < num_trace_entries; i++, head_idx--) {
+        struct ring_trace_entry *entry = &trace_entries[head_idx % num_trace_entries];
+//      if (i == 0)
+//          printk("head ==> ");
 
         bfdebug_transaction(0, [&](std::string * msg) {
-            char buf[512] = {0};
+        char buf[512] = {0};
 #if 0
             std::string ln = "type: ";
             ln += event_type_to_string(entry->type);
@@ -986,37 +1008,37 @@ void vcpu::dump_ring_trace_buffer(void *this_ring,
             ln += ") cpu: ";
             bfn::to_string(ln, this->id(), 10);
 #endif
-            sprintf(buf, "type:%16s(%x) cpu: %lu [%c|%c|%c] comm: %s pid: %d rip: %16lx rsp: %16lx "
-				"rdi: %09lx gsbase: %16lx lcd_stack: %16lx[bmap: %x nc:%u] "
-				"eflags: %08lx [IF: %d]\n",
-				event_type_to_string(entry->type),
-				entry->type,
-				id,
-				entry->context & (IN_NMI) ? 'N' : '-',
-				entry->context & (IN_SOFTIRQ) ? 'S' : '-',
-				entry->context & (IN_IRQ) ? 'I' : '-',
-				entry->name, entry->pid, entry->rip,
-				entry->rsp, entry->rdi, entry->gsbase, entry->lcd_stack,
-				entry->lcd_stack_bit, entry->lcd_nc, entry->eflags,
-				!!(entry->eflags & IF_FLAG));
+        sprintf(buf, "type:%16s(%x) cpu: %lu [%c|%c|%c] comm: %s pid: %d rip: %16lx rsp: %16lx "
+                "rdi: %09lx gsbase: %16lx lcd_stack: %16lx[bmap: %x nc:%u] "
+                "eflags: %08lx [IF: %d]\n",
+                event_type_to_string(entry->type),
+                entry->type,
+                id,
+                entry->context & (IN_NMI) ? 'N' : '-',
+                entry->context & (IN_SOFTIRQ) ? 'S' : '-',
+                entry->context & (IN_IRQ) ? 'I' : '-',
+                entry->name, entry->pid, entry->rip,
+                entry->rsp, entry->rdi, entry->gsbase, entry->lcd_stack,
+                entry->lcd_stack_bit, entry->lcd_nc, entry->eflags,
+                !!(entry->eflags & IF_FLAG));
             bfdebug_info(0, buf, msg);
         });
 #if 0
-		printk("type:%16s(%x) cpu: %d [%c|%c|%c] comm: %s pid: %d rip: %16lx rsp: %16lx "
-				"rdi: %09lx gsbase: %16lx lcd_stack: %16lx[bmap: %x nc:%u] "
-				"eflags: %08lx [IF: %d]\n",
-				event_type_to_string(entry->type),
-				entry->type,
-				this->id(),
-				entry->context & (IN_NMI) ? 'N' : '-',
-				entry->context & (IN_SOFTIRQ) ? 'S' : '-',
-				entry->context & (IN_IRQ) ? 'I' : '-',
-				entry->name, entry->pid, entry->rip,
-				entry->rsp, entry->rdi, entry->gsbase, entry->lcd_stack,
-				entry->lcd_stack_bit, entry->lcd_nc, entry->eflags,
-				!!(entry->eflags & IF_FLAG));
+        printk("type:%16s(%x) cpu: %d [%c|%c|%c] comm: %s pid: %d rip: %16lx rsp: %16lx "
+                "rdi: %09lx gsbase: %16lx lcd_stack: %16lx[bmap: %x nc:%u] "
+                "eflags: %08lx [IF: %d]\n",
+                event_type_to_string(entry->type),
+                entry->type,
+                this->id(),
+                entry->context & (IN_NMI) ? 'N' : '-',
+                entry->context & (IN_SOFTIRQ) ? 'S' : '-',
+                entry->context & (IN_IRQ) ? 'I' : '-',
+                entry->name, entry->pid, entry->rip,
+                entry->rsp, entry->rdi, entry->gsbase, entry->lcd_stack,
+                entry->lcd_stack_bit, entry->lcd_nc, entry->eflags,
+                !!(entry->eflags & IF_FLAG));
 #endif
-	}
+    }
 }
 
 void 
@@ -1088,7 +1110,7 @@ vcpu::dump_instruction(uint64_t instr_gva) {
         bfdebug_transaction(0, [&](std::string * msg) {
             bferror_subnhex(0, "instr_hpa is null", instr_hpa, msg);
         });
-	return; 
+    return; 
     }
 
 
@@ -1168,26 +1190,46 @@ void
 vcpu::dump_stack() {
     /* Assume that entire stack page is mapped */
     unsigned long long stack = this->rsp(); 
-    unsigned long long roundup = PGROUNDUP(stack); 
-    unsigned long long size = roundup - stack; 
+    uint64_t stack_gpa, stack_hpa;
 
-    if (this->m_mmap->eptp() != ::intel_x64::vmcs::ept_pointer::phys_addr::get()) {
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_info(0, "VMFUNC'ed not going to dump the stack (don't have EPT)", msg); 
-        });
-
-        return; 
-    };
+//    if (this->m_mmap->eptp() != ::intel_x64::vmcs::ept_pointer::phys_addr::get()) {
+//        bfdebug_transaction(0, [&](std::string * msg) {
+//            bfdebug_info(0, "VMFUNC'ed not going to dump the stack (don't have EPT)", msg); 
+//        });
+//
+//        return; 
+//    };
   
-    if (stack == 0) {
-        bfdebug_transaction(0, [&](std::string * msg) {
-            bfdebug_info(0, "Stack pointer is NULL", msg); 
-        });
 
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "Dumping stack from rsp", stack, msg);
+    });
+
+    stack_gpa = lcd_gva_to_gpa(stack);  
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "stack_gpa", stack_gpa, msg);
+    });
+
+    if (bfn::upper(stack_gpa) == 0) 
         return; 
-    }; 
 
-    auto map = this->map_gva_4k<uint64_t>(stack, size);
+    stack_hpa = lcd_gpa_to_hpa(stack_gpa);
+    if (bfn::upper(stack_hpa) == 0) 
+        return; 
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "stack_hpa", stack_hpa, msg);
+        bfdebug_subnhex(0, "bfn::upper(stack_hpa)", bfn::upper(stack_hpa), msg);
+        bfdebug_subnhex(0, "bfn::lower(stack_hpa)", bfn::lower(stack_hpa), msg);
+    });
+
+    auto map = this->map_hpa_4k<uint64_t>(bfn::upper(stack_hpa));
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_info(0, "mapped stack page ok", msg);
+    });
+
     dump_as_stack(&map.get()[0], stack); 
 }
 
@@ -1200,8 +1242,8 @@ vcpu::dump_exception_stack() {
     uint64_t stack_gpa, stack_hpa;
 
     bfdebug_transaction(0, [&](std::string * msg) {
-        bferror_subnhex(0, "Exception stack starting at (rsp)", this->rsp(), msg);
-        bferror_subnhex(0, "roundup page", roundup, msg);
+        bfdebug_subnhex(0, "Exception stack starting at (rsp)", this->rsp(), msg);
+        bfdebug_subnhex(0, "roundup page", roundup, msg);
     });
 
     if(size == 0) {
@@ -1215,7 +1257,12 @@ vcpu::dump_exception_stack() {
         bferror_subnhex(0, "stack_gpa", stack_gpa, msg);
     });
 
+    if (bfn::upper(stack_gpa) == 0) 
+        return; 
+
     stack_hpa = lcd_gpa_to_hpa(stack_gpa);
+    if (bfn::upper(stack_hpa) == 0) 
+        return; 
 
     bfdebug_transaction(0, [&](std::string * msg) {
         bferror_subnhex(0, "stack_hpa", stack_hpa, msg);
@@ -1273,11 +1320,11 @@ vcpu::dump_exception_stack() {
             bferror_info(0, "Dump stack saved in the exception frame:", msg);
         });
 
-	uint64_t offset = bfn::lower(stack_hpa); 
+        uint64_t offset = bfn::lower(stack_hpa); 
 
         dump_as_stack(&map.get()[bfn::lower(saved_rsp)/sizeof(uint64_t)], saved_rsp); 
 
-        /* RSP is pointing somewhere else... lets dump that somewhere else in 
+        /* RBP is pointing somewhere else... lets dump that somewhere else in 
          * case there is something useful there */
         if(!((this->rbp() >= stack) && (this->rbp() < roundup))) {
             uint64_t rbp_stack;
