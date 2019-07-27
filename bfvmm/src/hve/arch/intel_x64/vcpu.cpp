@@ -1073,6 +1073,7 @@ vcpu::dump_trace_log() {
     bfdebug_transaction(0, [&](std::string * msg) {
         bferror_subnhex(0, "Mapping trace buffer gpa:", trace_buffer_gva, msg);
         bferror_subnhex(0, "size (pages):", trace_buffer_pages, msg);
+        bferror_subndec(0, "head:", trace_ring_head, msg);
     });
 
     auto map_buffer = this->map_gva_4k<uint64_t>(trace_buffer_gva, trace_buffer_size);
@@ -1092,7 +1093,7 @@ vcpu::dump_instruction(uint64_t instr_gva) {
     unsigned long long current_address = instr_gva;
 
     //auto map = this->map_gva_4k<uint8_t>(instr_gva, size);
-    uint64_t instr_gpa = lcd_gva_to_gpa(instr_gva);  
+    uint64_t instr_gpa = lcd_gva_to_gpa(instr_gva, true);  
 
     bfdebug_transaction(0, [&](std::string * msg) {
         bferror_subnhex(0, "instr_gpa", instr_gpa, msg);
@@ -1366,6 +1367,64 @@ vcpu::dump_exception_stack() {
         }
 
     };
+
+}
+
+static uint64_t idt_entry_offset(uint64_t *idt, unsigned int index)
+{
+    auto sd1 = idt[(index * 2U) + 0U];
+    auto sd2 = idt[(index * 2U) + 1U];
+
+    auto base_15_00 = ((sd1 & 0x000000000000FFFFULL) >> 0);
+    auto base_31_16 = ((sd1 & 0xFFFF000000000000ULL) >> 32);
+    auto base_63_32 = ((sd2 & 0x00000000FFFFFFFFULL) << 32);
+
+    return base_63_32 | base_31_16 | base_15_00;
+};
+
+void 
+vcpu::dump_idt() {
+    unsigned long long idt = ::intel_x64::vmcs::guest_idtr_base::get();
+    unsigned long long idt_size = ::intel_x64::vmcs::guest_idtr_limit::get();
+    unsigned long long idt_gpa, idt_hpa;
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "Dump IDT at", idt, msg);
+    });
+
+    idt_gpa = lcd_gva_to_gpa(idt);  
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "idt_gpa", idt_gpa, msg);
+    });
+
+    if (bfn::upper(idt_gpa) == 0) 
+        return; 
+
+    idt_hpa = lcd_gpa_to_hpa(idt_gpa);
+    if (bfn::upper(idt_hpa) == 0) 
+        return; 
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_subnhex(0, "idt_hpa", idt_hpa, msg);
+        bferror_subndec(0, "idt size", idt_size, msg);
+    });
+
+    auto map = this->map_hpa_4k<uint64_t>(bfn::upper(idt_hpa));
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bferror_info(0, "mapped idt ok", msg);
+    });
+
+    /* Assume IDT is page aligned */
+    for (int i = 0; i < 32; i++) {
+        uint64_t offset = idt_entry_offset(&map.get()[0], i); 
+
+        bfdebug_transaction(0, [&](std::string * msg) {
+            bferror_subndec(0, "entry", i, msg);
+            bferror_subnhex(0, "offset", offset, msg);
+        });
+    }
 
 }
 

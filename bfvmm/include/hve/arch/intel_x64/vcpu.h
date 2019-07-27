@@ -217,11 +217,11 @@ public:
     // Fault Handling
     //==========================================================================
 
-    VIRTUAL uint64_t lcd_gpa_to_hpa(uint64_t gpa, bool verbose = false);
-    VIRTUAL uint64_t lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose = false);
+    VIRTUAL uint64_t lcd_gpa_to_hpa(uint64_t gpa, bool verbose = true);
+    VIRTUAL uint64_t lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose = true);
 
-    VIRTUAL uint64_t lcd_gva_to_gpa(uint64_t gva, bool verbose = false);
-    VIRTUAL uint64_t lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose = false);
+    VIRTUAL uint64_t lcd_gva_to_gpa(uint64_t gva, bool verbose = true);
+    VIRTUAL uint64_t lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose = true);
 
     VIRTUAL void dump_ept_entry(uint64_t gpa);
 
@@ -237,6 +237,8 @@ public:
 
     VIRTUAL void dump_exception_stack();
 
+    VIRTUAL void dump_idt();
+    
     VIRTUAL void dump_instruction(uint64_t instr_gva);
 
     VIRTUAL void dump_perf_counters(void); 

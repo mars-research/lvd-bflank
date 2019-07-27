@@ -255,7 +255,9 @@ handle_cpuid_lcds_syscall_illegal_exception(vcpu *vcpu)
 
     vcpu->dump("Dumping illegal exception from LCD");
 
-    vcpu->dump_exception_stack(); 
+    vcpu->dump_exception_stack();
+    vcpu->dump_idt(); 
+
     vcpu->set_rax(0x0);
     //vcpu->halt();
     return true; 
