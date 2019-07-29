@@ -905,20 +905,32 @@ vcpu::dump_ept_pointers() {
 
 
 struct ring_trace_entry {
-    unsigned long rip;
-    unsigned long eflags;
-    unsigned long rsp;
-    unsigned long rdi;
-    unsigned long lcd_stack;
-    unsigned long gsbase;
-    unsigned char context;
-    unsigned char lcd_stack_bit;
-    unsigned char lcd_nc;
-    unsigned short pid;
-    unsigned type;
-    unsigned orig_type;
-    char name[PROC_NAME_MAX];
+	unsigned long rip;
+	unsigned long eflags;
+	unsigned long rsp;
+	unsigned long rdi;
+	unsigned long lcd_stack;
+	unsigned long gsbase;
+	unsigned char context;
+	unsigned char lcd_stack_bit;
+	unsigned char lcd_nc;
+	unsigned short pid;
+	unsigned type;
+	unsigned orig_type;
+	char name[PROC_NAME_MAX];
 };
+
+
+struct ring_trace_header {
+	unsigned long head;
+	unsigned long size; 
+};
+
+struct ring_trace_buffer {
+	struct ring_trace_header header; 
+	struct ring_trace_entry entries[];
+};
+
 
 static const char *event_type_to_string(unsigned type)
 {
@@ -985,16 +997,18 @@ static const char *event_type_to_string(unsigned type)
     }
 }
 
-void vcpu::dump_ring_trace_buffer(void *this_ring, 
-                    unsigned long head_idx, 
-                    unsigned long num_trace_entries) 
+void vcpu::dump_ring_trace_buffer(struct ring_trace_buffer *trace_buf) 
 {
-    struct ring_trace_entry *trace_entries = (struct ring_trace_entry*) this_ring;
     int i;
+    unsigned long idx = trace_buf->header.head;
     auto id = this->id();
 
-    for (i = 0; i < num_trace_entries; i++, head_idx--) {
-        struct ring_trace_entry *entry = &trace_entries[head_idx % num_trace_entries];
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subndec(0, "head:", idx, msg);
+    });
+
+    for (i = 0; i < trace_buf->header.size; i++, idx--) {
+        struct ring_trace_entry *entry = &trace_buf->entries[idx % trace_buf->header.size];
 //      if (i == 0)
 //          printk("head ==> ");
 
@@ -1055,7 +1069,6 @@ vcpu::dump_trace_log() {
 
     uint64_t trace_buffer_gva = map.get()[3];
     uint64_t trace_buffer_pages = map.get()[4];
-    uint64_t trace_ring_head = map.get()[5];
 
 #define PAGE_SIZE   4096
     uint64_t trace_buffer_size = trace_buffer_pages * PAGE_SIZE;
@@ -1073,15 +1086,12 @@ vcpu::dump_trace_log() {
     bfdebug_transaction(0, [&](std::string * msg) {
         bferror_subnhex(0, "Mapping trace buffer gpa:", trace_buffer_gva, msg);
         bferror_subnhex(0, "size (pages):", trace_buffer_pages, msg);
-        bferror_subndec(0, "head:", trace_ring_head, msg);
     });
 
     auto map_buffer = this->map_gva_4k<uint64_t>(trace_buffer_gva, trace_buffer_size);
-    // continue here
-    //some_type = (some_type) &map_buffer.get()[0];
-    void *entries = (void *) &map_buffer.get()[0];
+    struct ring_trace_buffer *trace_buf = (struct ring_trace_buffer *) &map_buffer.get()[0];
 
-    dump_ring_trace_buffer(entries, trace_ring_head, trace_buffer_size / sizeof(struct ring_trace_entry));
+    dump_ring_trace_buffer(trace_buf);
 
     return;
 }
