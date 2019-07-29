@@ -1000,11 +1000,11 @@ static const char *event_type_to_string(unsigned type)
 void vcpu::dump_ring_trace_buffer(struct ring_trace_buffer *trace_buf) 
 {
     int i;
-    unsigned long idx = trace_buf->header.head;
+    unsigned long idx = trace_buf->header.head - 1;
     auto id = this->id();
 
     bfdebug_transaction(0, [&](std::string * msg) {
-        bfdebug_subndec(0, "head:", idx, msg);
+        bfdebug_subndec(0, "head:", idx % trace_buf->header.size, msg);
     });
 
     for (i = 0; i < trace_buf->header.size; i++, idx--) {
