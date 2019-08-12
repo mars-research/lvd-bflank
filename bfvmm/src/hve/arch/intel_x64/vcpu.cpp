@@ -615,6 +615,13 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
 
         hpa = ::intel_x64::ept::pdpt::entry::phys_addr::get(entry);
 
+        if (::intel_x64::ept::pdpt::entry::ps::is_enabled(entry)) {
+		    bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "eptl3 etnry maps 1GB page", entry, msg);
+            });
+            return 0; 
+        };
+
         if (verbose)
             bfdebug_transaction(0, [&](std::string * msg) {
                 bfdebug_subnhex(0, "eptl3 etnry", entry, msg);
@@ -632,6 +639,14 @@ vcpu::lcd_gpa_to_hpa(uint64_t gpa, uint64_t eptp, bool verbose) {
         uint64_t entry = map.get()[index];
 
         hpa = ::intel_x64::ept::pd::entry::phys_addr::get(entry);
+
+        if (::intel_x64::ept::pd::entry::ps::is_enabled(entry)) {
+		    bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "eptl2 etnry maps 2MB page", entry, msg);
+            });
+            return 0; 
+        };
+
 
         if (verbose)
             bfdebug_transaction(0, [&](std::string * msg) {
@@ -731,6 +746,13 @@ vcpu::lcd_gva_to_gpa(uint64_t gva, uint64_t cr3, uint64_t eptp, bool verbose) {
         uint64_t entry = map.get()[index];
 
         gpa = ::x64::pd::entry::phys_addr::get(entry);
+
+        if (!::x64::pd::entry::ps::is_enabled(entry)) {
+		    bfdebug_transaction(0, [&](std::string * msg) {
+                bfdebug_subnhex(0, "ptl2 etnry doesn't map a 2MB page", entry, msg);
+            });
+        };
+
 
         if (verbose)
             bfdebug_transaction(0, [&](std::string * msg) {
