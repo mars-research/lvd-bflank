@@ -1289,7 +1289,7 @@ vcpu::dump_exception_stack() {
         bfdebug_subnhex(0, "roundup page", roundup, msg);
     });
 
-    if(size == 0) {
+    if (size == 0) {
         bfdebug_info(0, "Exception stack is empty"); 
         return;
     };
@@ -1304,6 +1304,7 @@ vcpu::dump_exception_stack() {
         return; 
 
     stack_hpa = lcd_gpa_to_hpa(stack_gpa);
+
     if (bfn::upper(stack_hpa) == 0) 
         return; 
 
@@ -1326,24 +1327,48 @@ vcpu::dump_exception_stack() {
         });
     };
 
-    if (size < (7*sizeof(uint64_t))) {
+    // Ideally 7 values are pushed onto the stack whenever exception happens.
+    // The offsets are as follows.  However, some exceptions such as debug
+    // pushes only 6 values.
+    auto regs_on_stack = size / sizeof(uint64_t);
+    auto rax_off = 0;
+    auto err_off = 1;
+    auto rip_off = 2;
+    auto cs_off = 3;
+    auto flags_off = 4;
+    auto rsp_off = 5;
+    auto ss_off = 6;
+
+    if (regs_on_stack < 7) {
         bfdebug_transaction(0, [&](std::string * msg) {
-                bferror_subnhex(0, "stack size < 7 * sizeof(uint64_t)", size, msg);
+                bferror_subnhex(0, "WARN: exception stack size: ", size, msg);
         });
-    };
+    }
+
+    if (regs_on_stack == 6) {
+        rax_off = 0;
+        rip_off = 1;
+        cs_off = 2;
+        flags_off = 3;
+        rsp_off = 4;
+        ss_off = 5;
+    }
 
     bfdebug_transaction(0, [&](std::string * msg) {
-        bferror_subnhex(0, "saved rax",  map.get()[offset/sizeof(uint64_t) + 0], msg);
-        bferror_subnhex(0, "error code",  map.get()[offset/sizeof(uint64_t) + 1], msg);
-        bferror_subnhex(0, "rip",  map.get()[offset/sizeof(uint64_t) + 2], msg);
-        bferror_subnhex(0, "cs",  map.get()[offset/sizeof(uint64_t) + 3], msg);
-        bferror_subnhex(0, "flags",  map.get()[offset/sizeof(uint64_t) + 4], msg);
-        bferror_subnhex(0, "rsp",  map.get()[offset/sizeof(uint64_t) + 5], msg);
-        bferror_subnhex(0, "ss",  map.get()[offset/sizeof(uint64_t) + 6], msg);
-    });
+            bferror_subnhex(0, "saved rax",  map.get()[offset/sizeof(uint64_t) + rax_off], msg);
+
+            if (regs_on_stack == 7)
+                bferror_subnhex(0, "error code",  map.get()[offset/sizeof(uint64_t) + err_off], msg);
+
+            bferror_subnhex(0, "rip",  map.get()[offset/sizeof(uint64_t) + rip_off], msg);
+            bferror_subnhex(0, "cs",  map.get()[offset/sizeof(uint64_t) + cs_off], msg);
+            bferror_subnhex(0, "flags",  map.get()[offset/sizeof(uint64_t) + flags_off], msg);
+            bferror_subnhex(0, "rsp",  map.get()[offset/sizeof(uint64_t) + rsp_off], msg);
+            bferror_subnhex(0, "ss",  map.get()[offset/sizeof(uint64_t) + ss_off], msg);
+            });
 
     /* Dump instruction pointed by the RIP onthe frame */
-    dump_instruction(map.get()[offset/sizeof(uint64_t) + 2]);
+    dump_instruction(map.get()[offset/sizeof(uint64_t) + rip_off]);
 
 //    bfdebug_transaction(0, [&](std::string * msg) {
 //        bferror_subnhex(0, "s1",  map.get()[offset/sizeof(uint64_t) + 7], msg);
@@ -1355,7 +1380,7 @@ vcpu::dump_exception_stack() {
 //        bferror_subnhex(0, "s7",  map.get()[offset/sizeof(uint64_t) + 13], msg);
 //    });
 
-    uint64_t saved_rsp = map.get()[offset/sizeof(uint64_t) + 5]; 
+    uint64_t saved_rsp = map.get()[offset/sizeof(uint64_t) + rsp_off];
     if ((saved_rsp >= stack) && (saved_rsp < roundup)) {
         /* Dump the stack of the program right before the 
          * exception, in this case it's on the same page */
@@ -1407,9 +1432,7 @@ vcpu::dump_exception_stack() {
 
             dump_as_stack(&rbp_map.get()[offset/sizeof(uint64_t)], rbp_stack); 
         }
-
-    };
-
+    }
 }
 
 static uint64_t idt_entry_offset(uint64_t *idt, unsigned int index)
