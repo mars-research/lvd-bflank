@@ -346,6 +346,8 @@ control_register_handler::execute_wrcr0(
     emulate_rdgpr(vcpu);
     vcpu->set_gr2(vcpu->cr0());
     vcpu->set_cr0(vcpu->gr1());
+    /* Update the shadow value */
+    vmcs_n::cr0_read_shadow::set(vcpu->gr1());
 }
 
 void
@@ -372,6 +374,9 @@ control_register_handler::execute_wrcr4(
     emulate_rdgpr(vcpu);
     vcpu->set_gr2(vcpu->cr4());
     vcpu->set_cr4(vcpu->gr1());
+    /* Update the shadow value */
+    vmcs_n::cr4_read_shadow::set(vcpu->gr1());
+
 }
 
 // -----------------------------------------------------------------------------

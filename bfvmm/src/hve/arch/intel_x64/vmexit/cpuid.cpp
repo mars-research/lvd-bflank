@@ -351,6 +351,7 @@ handle_cpuid_lcds_syscall_walk_gva(vcpu *vcpu)
     return vcpu->advance();
 }
 
+// Table C-1. Basic Exit Reasons
 static const char *bfdebug_exit_to_str(unsigned int i) {
     switch(i) {
         case 0: return "nmi";
@@ -431,14 +432,21 @@ handle_cpuid_lcds_syscall_dump_perf(vcpu *vcpu)
     //vcpu->dump_perf_counters();
     vcpu->set_rax(vcpu->m_exits_total);
     bfdebug_transaction(0, [&](std::string * msg) {
-        bfdebug_info(0, "Dumping VM exits", msg); 
+        bfdebug_info(0, "Dumping VM exits", msg);
+        bfdebug_subndec(0, "total_exits", vcpu->m_exits_total, msg);
+        	
         for (int i = 0; i < 65; i++) {
             if(vcpu->m_exits[i]) {
-                bfdebug_subnhex(0, bfdebug_exit_to_str(i), vcpu->m_exits[i], msg);
+                bfdebug_subndec(0, bfdebug_exit_to_str(i), vcpu->m_exits[i], msg);
                 vcpu->m_exits[i] = 0; 
             }
         }
     });
+    vcpu->m_exits_total = 0;
+    vmcs_n::cr0_guest_host_mask::dump(0); 
+    vmcs_n::cr0_read_shadow::dump(0); 
+    vmcs_n::cr4_guest_host_mask::dump(0);
+    vmcs_n::cr4_read_shadow::dump(0); 
 #else
    bfdebug_info(0, "VM exit counting is not supported (recompile with BF_COUNT_EXTIS)"); 
 #endif

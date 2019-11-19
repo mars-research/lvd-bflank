@@ -200,12 +200,22 @@ vcpu::vcpu(
 
     m_vpid_handler.enable();
     m_nmi_handler.enable_exiting();
-    m_control_register_handler.enable_wrcr0_exiting(0);
-    m_control_register_handler.enable_wrcr4_exiting(0);
+
+    /* Exit on all writes to CR0 and CR4 */
+    m_control_register_handler.enable_wrcr0_exiting(~0UL);
+    vmcs_n::cr0_read_shadow::set(guest_cr0::get());
+
+    m_control_register_handler.enable_wrcr4_exiting(~0UL);
+    vmcs_n::cr4_read_shadow::set(guest_cr4::get());
 
     /* Trap on all MSR access */
-    //this->trap_on_all_rdmsr_accesses();
-    //this->trap_on_all_wrmsr_accesses();
+    this->trap_on_all_rdmsr_accesses();
+    this->trap_on_all_wrmsr_accesses();
+
+
+    /* Trap on all I/O instructions */
+    //this->trap_on_all_io_instruction_accesses(); 
+
 }
 
 //==============================================================================
@@ -1534,7 +1544,7 @@ vcpu::dump(const char *str)
     
     dump_trace_log();
 
-    bfdebug_info(0, "Done dumpint state");
+    bfdebug_info(0, "Done dumping state");
 }
 
 void

@@ -140,7 +140,7 @@ vcpu::dump_perf_counters(void)
 
 #ifdef BF_COUNT_EXTIS
     bfdebug_transaction(0, [&](std::string * msg) {
-         bfdebug_subnhex(0, "total_exits", m_exits_total, msg);
+         bfdebug_subndec(0, "total_exits", m_exits_total, msg);
     });
     m_exits_total = 0;
 #else
