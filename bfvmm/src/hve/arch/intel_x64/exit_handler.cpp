@@ -67,7 +67,7 @@ handle_exit(
 #ifdef BF_COUNT_EXTIS
         if (vcpu) {
             vcpu->m_exits_total++;
-            if(vmcs_n::exit_reason::basic_exit_reason::get() < 65)
+            if(vmcs_n::exit_reason::basic_exit_reason::get() < MAX_EXIT_REASONS)
                 vcpu->m_exits[vmcs_n::exit_reason::basic_exit_reason::get()] ++;
         }
 #endif

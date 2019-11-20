@@ -208,6 +208,9 @@ vcpu::vcpu(
     m_control_register_handler.enable_wrcr4_exiting(~0UL);
     vmcs_n::cr4_read_shadow::set(guest_cr4::get());
 
+    /* Exit on writes to CR3 */
+    m_control_register_handler.enable_wrcr3_exiting(); 
+
     /* Trap on all MSR access */
     this->trap_on_all_rdmsr_accesses();
     this->trap_on_all_wrmsr_accesses();
@@ -215,6 +218,11 @@ vcpu::vcpu(
 
     /* Trap on all I/O instructions */
     //this->trap_on_all_io_instruction_accesses(); 
+#ifdef BF_COUNT_EXTIS
+    for (int i = 0; i < MAX_EXIT_REASONS; i++) {
+        this->m_exits[i] = 0; 
+    }
+#endif
 
 }
 

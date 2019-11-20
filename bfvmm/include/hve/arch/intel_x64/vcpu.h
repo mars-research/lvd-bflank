@@ -76,6 +76,7 @@
 #endif
 
 #define BF_COUNT_EXTIS 1
+#define MAX_EXIT_REASONS 64
 
 // -----------------------------------------------------------------------------
 // Defintion
@@ -2050,7 +2051,7 @@ public:
     ept::mmap *m_mmap{};
 #ifdef BF_COUNT_EXTIS
     uint64_t m_exits_total;
-    uint64_t m_exits[65];
+    uint64_t m_exits[MAX_EXIT_REASONS];
 #endif
 };
 
