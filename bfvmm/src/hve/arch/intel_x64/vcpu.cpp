@@ -216,6 +216,24 @@ vcpu::vcpu(
     this->trap_on_all_wrmsr_accesses();
 
 
+    /* Descriptor table exiting (LGDT, LIDT) */
+    primary_processor_based_vm_execution_controls::descriptor_table_exiting::enable(); 
+
+    /* xsetbv is a non-conditional exit */
+
+    /* 
+     * - Stores to control registers
+     *   -- cr0, cr3, cr4
+     * - MSRs
+     * - I/O ports
+     * - store to extra control register (xcr0) / xsetbv
+     * 
+     * ToDo: 
+     * - debug registers (mov-DR)
+     * - store GDT, IDT
+     * - xrstor
+     */
+
     /* Trap on all I/O instructions */
     //this->trap_on_all_io_instruction_accesses(); 
 #ifdef BF_COUNT_EXTIS
