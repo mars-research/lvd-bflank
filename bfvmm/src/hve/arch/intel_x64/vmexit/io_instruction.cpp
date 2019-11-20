@@ -262,6 +262,9 @@ io_instruction_handler::emulate_in(info_t &info)
             info.val = ::x64::portio::ind(gsl::narrow_cast<uint16_t>(info.port_number));
             break;
     }
+
+    bfdebug_nhex(0, "emulated in (port):", info.port_number);
+    bfdebug_nhex(0, "emulated in (val):", info.val);
 }
 
 void
@@ -291,6 +294,9 @@ io_instruction_handler::emulate_out(info_t &info)
             );
             break;
     }
+    bfdebug_nhex(0, "emulated out (port):", info.port_number);
+    bfdebug_nhex(0, "emulated out (val):", info.val);
+
 }
 
 void

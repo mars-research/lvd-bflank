@@ -215,11 +215,11 @@ vcpu::vcpu(
     this->trap_on_all_rdmsr_accesses();
     this->trap_on_all_wrmsr_accesses();
 
+    /* Trap on all I/O instructions */
+    this->trap_on_all_io_instruction_accesses(); 
 
     /* Descriptor table exiting (LGDT, LIDT) */
-    primary_processor_based_vm_execution_controls::descriptor_table_exiting::enable(); 
-
-    /* xsetbv is a non-conditional exit */
+    //secondary_processor_based_vm_execution_controls::descriptor_table_exiting::enable(); 
 
     /* 
      * - Stores to control registers
@@ -234,8 +234,6 @@ vcpu::vcpu(
      * - xrstor
      */
 
-    /* Trap on all I/O instructions */
-    //this->trap_on_all_io_instruction_accesses(); 
 #ifdef BF_COUNT_EXTIS
     for (int i = 0; i < MAX_EXIT_REASONS; i++) {
         this->m_exits[i] = 0; 
