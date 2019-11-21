@@ -373,12 +373,24 @@ control_register_handler::execute_wrcr3(
     this->m_lru_cache = this->m_lru_cache >> 4;
     this->m_lru_cache = this->m_lru_cache | (lru << 12);
     switch (lru) {
-        case 0: ::intel_x64::vmcs::cr3_target_value_0::set(vcpu->gr1()); 
-        case 1: ::intel_x64::vmcs::cr3_target_value_1::set(vcpu->gr1()); 
-        case 2: ::intel_x64::vmcs::cr3_target_value_2::set(vcpu->gr1()); 
-        case 3: ::intel_x64::vmcs::cr3_target_value_3::set(vcpu->gr1()); 
+        case 0: {
+            ::intel_x64::vmcs::cr3_target_value_0::set(vcpu->gr1()); 
+            break; 
+        };
+        case 1: {
+             ::intel_x64::vmcs::cr3_target_value_1::set(vcpu->gr1()); 
+             break; 
+        };
+        case 2: {
+             ::intel_x64::vmcs::cr3_target_value_2::set(vcpu->gr1()); 
+             break; 
+        };
+        case 3: {
+              ::intel_x64::vmcs::cr3_target_value_3::set(vcpu->gr1()); 
+              break; 
+        };
         default: {
-            bfdebug_ndec(0, "bad lru", lru);       
+            bfdebug_ndec(0, "bad lru", lru);
         };
     };
 }
