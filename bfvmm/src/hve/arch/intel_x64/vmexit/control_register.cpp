@@ -390,7 +390,7 @@ control_register_handler::execute_wrcr3(
               break; 
         };
         default: {
-            bfdebug_ndec(0, "bad lru", lru);
+            bfdebug_ndec(0, "bad lru", lru);      
         };
     };
 }
