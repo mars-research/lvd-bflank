@@ -252,6 +252,8 @@ control_register_handler::control_register_handler(
     m_vcpu{vcpu}
 {
     using namespace vmcs_n;
+    /* Init the LRU cache to 0, 1, 2, 3 */
+    this->m_lru_cache = (0 << 12) | (1 << 8) | (2 << 4) | 3;
 
     vcpu->add_handler(
         exit_reason::basic_exit_reason::control_register_accesses,
@@ -358,6 +360,7 @@ control_register_handler::execute_rdcr3(
     emulate_wrgpr(vcpu);
 }
 
+
 void
 control_register_handler::execute_wrcr3(
     gsl::not_null<vcpu *> vcpu)
@@ -365,6 +368,19 @@ control_register_handler::execute_wrcr3(
     emulate_rdgpr(vcpu);
     vcpu->set_gr2(vcpu->cr3());
     vcpu->set_cr3(vcpu->gr1());
+    /* Update the cache */
+    uint64_t lru = this->m_lru_cache & 0b1111;  
+    this->m_lru_cache = this->m_lru_cache >> 4;
+    this->m_lru_cache = this->m_lru_cache | (lru << 12);
+    switch (lru) {
+        case 0: ::intel_x64::vmcs::cr3_target_value_0::set(vcpu->gr1()); 
+        case 1: ::intel_x64::vmcs::cr3_target_value_1::set(vcpu->gr1()); 
+        case 2: ::intel_x64::vmcs::cr3_target_value_2::set(vcpu->gr1()); 
+        case 3: ::intel_x64::vmcs::cr3_target_value_3::set(vcpu->gr1()); 
+        default: {
+            bfdebug_ndec(0, "bad lru", lru);       
+        };
+    };
 }
 
 void

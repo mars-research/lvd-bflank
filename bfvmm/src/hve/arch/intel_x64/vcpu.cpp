@@ -209,6 +209,16 @@ vcpu::vcpu(
     vmcs_n::cr4_read_shadow::set(guest_cr4::get());
 
     /* Exit on writes to CR3 */
+
+    ::intel_x64::msrs::ia32_vmx_misc::cr3_targets::dump(0); 
+    if (::intel_x64::msrs::ia32_vmx_misc::cr3_targets::get() == 4) {
+        ::intel_x64::vmcs::cr3_target_count::set(4); 
+        ::intel_x64::vmcs::cr3_target_value_0::set(0);
+        ::intel_x64::vmcs::cr3_target_value_1::set(0);
+        ::intel_x64::vmcs::cr3_target_value_2::set(0);
+        ::intel_x64::vmcs::cr3_target_value_3::set(0);
+    };
+
     m_control_register_handler.enable_wrcr3_exiting(); 
 
     /* Trap on all MSR access */

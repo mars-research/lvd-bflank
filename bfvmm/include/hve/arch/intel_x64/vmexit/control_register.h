@@ -367,6 +367,7 @@ private:
     std::list<handler_delegate_t> m_rdcr3_handlers;
     std::list<handler_delegate_t> m_wrcr3_handlers;
     std::list<handler_delegate_t> m_wrcr4_handlers;
+    uint64_t m_lru_cache;  
 
 public:
 
