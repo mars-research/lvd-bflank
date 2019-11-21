@@ -494,7 +494,8 @@ vcpu::write_control_state()
     address_of_io_bitmap_b::set(g_mm->virtptr_to_physint(m_io_bitmap_b.get()));
 
     use_msr_bitmap::enable();
-    use_io_bitmaps::enable();
+    //use_io_bitmaps::enable();
+    unconditional_io_exiting::enable(); 
 
     activate_secondary_controls::enable_if_allowed();
 

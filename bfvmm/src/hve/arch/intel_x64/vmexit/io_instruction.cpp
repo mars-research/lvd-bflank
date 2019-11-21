@@ -135,6 +135,8 @@ io_instruction_handler::handle(vcpu *vcpu)
         reps = vcpu->rcx() & 0x00000000FFFFFFFFULL;
     }
 
+
+    //bfdebug_nhex(0, "io_instruction_handler::handle(): reps", reps);
     struct info_t info = {
         0ULL,
         io_instruction::size_of_access::get(eq),
@@ -178,12 +180,17 @@ io_instruction_handler::handle(vcpu *vcpu)
 bool
 io_instruction_handler::handle_in(vcpu *vcpu, info_t &info)
 {
+#if 0
     const auto &hdlrs =
         m_in_handlers.find(info.port_number);
+#endif
 
+//    bfdebug_nhex(0, "io_instruction_handler::handle_in(): port", info.port_number);
+#if 0
     if (GSL_LIKELY(hdlrs != m_in_handlers.end())) {
 
         if (!m_emulate[info.port_number]) {
+            bfdebug_nhex(0, "io_instruction_handler::handle_in(): about to emulate port_number:", info.port_number);
             emulate_in(info);
         }
 
@@ -202,6 +209,17 @@ io_instruction_handler::handle_in(vcpu *vcpu, info_t &info)
             }
         }
     }
+#else
+    emulate_in(info);
+                
+    if (!info.ignore_write) {
+        store_operand(vcpu, info);
+    }
+                
+    if (!info.ignore_advance) {
+        return vcpu->advance();
+    }
+#endif
 
     if (m_default_handler.is_valid()) {
         bfdebug_nhex(0, "handle_in", info.port_number);
@@ -214,16 +232,25 @@ io_instruction_handler::handle_in(vcpu *vcpu, info_t &info)
 bool
 io_instruction_handler::handle_out(vcpu *vcpu, info_t &info)
 {
+#if 0	
     const auto &hdlrs =
         m_out_handlers.find(info.port_number);
+#endif 
 
+//    bfdebug_nhex(0, "io_instruction_handler::handle_out(): port", info.port_number);
+#if 0
     if (GSL_LIKELY(hdlrs != m_out_handlers.end())) {
         load_operand(vcpu, info);
 
         for (const auto &d : hdlrs->second) {
             if (d(vcpu, info)) {
 
+                bfdebug_nhex(0, "io_instruction_handler::handle_out(): info.ignore_write:", info.ignore_write);
+                bfdebug_nhex(0, "io_instruction_handler::handle_out(): m_emulate[info.port_number]", m_emulate[info.port_number]);
+                bfdebug_nhex(0, "io_instruction_handler::handle_out(): info.ignore_advance:", info.ignore_advance);
+
                 if (!info.ignore_write && !m_emulate[info.port_number]) {
+                    bfdebug_nhex(0, "io_instruction_handler::handle_out(): about to emulate port_number:", info.port_number);
                     emulate_out(info);
                 }
 
@@ -235,7 +262,15 @@ io_instruction_handler::handle_out(vcpu *vcpu, info_t &info)
             }
         }
     }
-
+#else
+     load_operand(vcpu, info);
+     emulate_out(info);
+                
+//     bfdebug_nhex(0, "io_instruction_handler::handle_out(): info.ignore_advance:", info.ignore_advance);
+     if (!info.ignore_advance) {
+         return vcpu->advance();
+     }
+#endif
     if (m_default_handler.is_valid()) {
         bfdebug_nhex(0, "handle_out", info.port_number);
         return m_default_handler(vcpu);
@@ -263,8 +298,8 @@ io_instruction_handler::emulate_in(info_t &info)
             break;
     }
 
-    bfdebug_nhex(0, "emulated in (port):", info.port_number);
-    bfdebug_nhex(0, "emulated in (val):", info.val);
+//    bfdebug_nhex(0, "emulated in (port):", info.port_number);
+//    bfdebug_nhex(0, "emulated in (val):", info.val);
 }
 
 void
@@ -294,8 +329,8 @@ io_instruction_handler::emulate_out(info_t &info)
             );
             break;
     }
-    bfdebug_nhex(0, "emulated out (port):", info.port_number);
-    bfdebug_nhex(0, "emulated out (val):", info.val);
+//    bfdebug_nhex(0, "emulated out (port):", info.port_number);
+//    bfdebug_nhex(0, "emulated out (val):", info.val);
 
 }
 
