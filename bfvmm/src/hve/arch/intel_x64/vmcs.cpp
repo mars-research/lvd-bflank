@@ -294,6 +294,7 @@ vcpu::dump_perf_counters(void)
     vmcs_n::cr0_read_shadow::dump(0); 
     vmcs_n::cr4_guest_host_mask::dump(0);
     vmcs_n::cr4_read_shadow::dump(0); 
+    m_hashtable.dump();
 #else
    bfdebug_info(0, "VM exit counting is not supported (recompile with BF_COUNT_EXTIS)"); 
 #endif

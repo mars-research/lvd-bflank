@@ -157,8 +157,10 @@ vcpu::vcpu(
 
 #ifdef BF_COUNT_EXTIS
     ,
-    m_exits_total{0}
+    m_exits_total{0},
+    m_hashtable{this}
 #endif
+
 {
     using namespace vmcs_n;
     bfn::call_once(g_once_flag, setup);

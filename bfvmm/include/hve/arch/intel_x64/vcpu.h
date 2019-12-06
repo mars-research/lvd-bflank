@@ -43,6 +43,7 @@
 #include "exit_handler.h"
 #include "interrupt_queue.h"
 #include "microcode.h"
+#include "hashtable.h"
 #include "vcpu_global_state.h"
 #include "vcpu_state.h"
 #include "vmcs.h"
@@ -2052,6 +2053,7 @@ public:
 #ifdef BF_COUNT_EXTIS
     uint64_t m_exits_total;
     uint64_t m_exits[MAX_EXIT_REASONS];
+    hashtable m_hashtable;
 #endif
 };
 

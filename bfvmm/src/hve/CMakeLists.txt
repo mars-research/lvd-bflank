@@ -43,6 +43,7 @@ if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
         arch/intel_x64/ept.cpp
         arch/intel_x64/exception.cpp
         arch/intel_x64/exit_handler.cpp
+        arch/intel_x64/hashtable.cpp
         arch/intel_x64/interrupt_queue.cpp
         arch/intel_x64/microcode.cpp
         arch/intel_x64/mtrrs.cpp

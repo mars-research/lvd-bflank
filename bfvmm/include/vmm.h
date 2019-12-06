@@ -57,6 +57,7 @@
 #include <bfvmm/hve/arch/intel_x64/ept.h>
 #include <bfvmm/hve/arch/intel_x64/exception.h>
 #include <bfvmm/hve/arch/intel_x64/exit_handler.h>
+#include <bfvmm/hve/arch/intel_x64/hashtable.h>
 #include <bfvmm/hve/arch/intel_x64/interrupt_queue.h>
 #include <bfvmm/hve/arch/intel_x64/microcode.h>
 #include <bfvmm/hve/arch/intel_x64/mtrrs.h>

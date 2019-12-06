@@ -203,6 +203,7 @@ wrmsr_handler::handle(vcpu *vcpu)
     }
 
     emulate_wrmsr(info.msr, info.val);
+    vcpu->m_hashtable.insert(info.msr);
     return vcpu->advance();
 }
 
