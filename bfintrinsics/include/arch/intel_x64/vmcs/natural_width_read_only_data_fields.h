@@ -522,15 +522,544 @@ namespace exit_qualification
         { dump_vmcs_nhex(level, msg); }
     }
 
-    namespace sldt
+    namespace gdt_idt
     {
-        constexpr const auto name = "sldt";
+        constexpr const auto name = "gdt_idt";
 
         inline auto get()
         { return get_vmcs_field(addr, name, exists()); }
 
         inline auto get_if_exists(bool verbose = false)
         { return get_vmcs_field_if_exists(addr, name, verbose, exists()); }
+
+        namespace scaling
+        {
+            constexpr const auto mask = 0x000000000000003ULL;
+            constexpr const auto from = 0ULL;
+            constexpr const auto name = "scaling";
+
+            constexpr const auto none = 0U;
+            constexpr const auto two = 1U;
+            constexpr const auto four = 2U;
+            constexpr const auto eight = 3U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        // Reserved bit here 
+        //
+
+        namespace addr_size
+        {
+            constexpr const auto mask = 0x000000000000380ULL;
+            constexpr const auto from = 7ULL;
+            constexpr const auto name = "addr_size";
+
+            constexpr const auto sixteen = 0U;
+            constexpr const auto thirtytwo = 1U;
+            constexpr const auto sixtyfour = 2U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace operand_size
+        {
+            constexpr const auto mask = 0x800ULL;
+            constexpr const auto from = 11ULL;
+            constexpr const auto name = "operand_size";
+
+            constexpr const auto sixsteen_bit = 0U;
+            constexpr const auto thirty_two_bit = 1U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace segment_register
+        {
+            constexpr const auto mask = 0x0000000000038000ULL;
+            constexpr const auto from = 15ULL;
+            constexpr const auto name = "segment_register";
+
+            constexpr const auto es = 0U;
+            constexpr const auto cs = 1U;
+            constexpr const auto ss = 2U;
+            constexpr const auto ds = 3U;
+            constexpr const auto fs = 4U;
+            constexpr const auto gs = 5U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace index_reg
+        {
+            constexpr const auto mask = 0x3c0000ULL;
+            constexpr const auto from = 18ULL;
+            constexpr const auto name = "index_reg";
+
+            constexpr const auto rax = 0U;
+            constexpr const auto rcx = 1U;
+            constexpr const auto rdx = 2U;
+            constexpr const auto rbx = 3U;
+            constexpr const auto rsp = 4U;
+            constexpr const auto rbp = 5U;
+            constexpr const auto rsi = 6U;
+            constexpr const auto rdi = 7U;
+            constexpr const auto r8 = 8U;
+            constexpr const auto r9 = 9U;
+            constexpr const auto r10 = 10U;
+            constexpr const auto r11 = 11U;
+            constexpr const auto r12 = 12U;
+            constexpr const auto r13 = 13U;
+            constexpr const auto r14 = 14U;
+            constexpr const auto r15 = 15U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace index_reg_valid
+        {
+            constexpr const auto mask = 0x400000ULL;
+            constexpr const auto from = 22ULL;
+            constexpr const auto name = "index_reg_valid";
+
+            constexpr const auto valid = 0U;
+            constexpr const auto invalid = 1U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace base_reg
+        {
+            constexpr const auto mask = 0x7800000ULL;
+            constexpr const auto from = 23ULL;
+            constexpr const auto name = "base_reg";
+
+            constexpr const auto rax = 0U;
+            constexpr const auto rcx = 1U;
+            constexpr const auto rdx = 2U;
+            constexpr const auto rbx = 3U;
+            constexpr const auto rsp = 4U;
+            constexpr const auto rbp = 5U;
+            constexpr const auto rsi = 6U;
+            constexpr const auto rdi = 7U;
+            constexpr const auto r8 = 8U;
+            constexpr const auto r9 = 9U;
+            constexpr const auto r10 = 10U;
+            constexpr const auto r11 = 11U;
+            constexpr const auto r12 = 12U;
+            constexpr const auto r13 = 13U;
+            constexpr const auto r14 = 14U;
+            constexpr const auto r15 = 15U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace base_reg_valid
+        {
+            constexpr const auto mask = 0x8000000ULL;
+            constexpr const auto from = 27ULL;
+            constexpr const auto name = "base_reg_valid";
+
+            constexpr const auto valid = 0U;
+            constexpr const auto invalid = 1U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace instruction_type
+        {
+            constexpr const auto mask = 0x30000000ULL;
+            constexpr const auto from = 28ULL;
+            constexpr const auto name = "instruction_type";
+
+            constexpr const auto sgdt = 0U;
+            constexpr const auto sidt = 1U;
+            constexpr const auto lgdt = 2U;
+            constexpr const auto lidt = 3U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+
+        inline void dump(int level, std::string *msg = nullptr)
+        { dump_vmcs_nhex(level, msg); }
+    }
+
+    namespace ldt_tr
+    {
+        constexpr const auto name = "ldt_tr";
+
+        inline auto get()
+        { return get_vmcs_field(addr, name, exists()); }
+
+        inline auto get_if_exists(bool verbose = false)
+        { return get_vmcs_field_if_exists(addr, name, verbose, exists()); }
+
+        namespace scaling
+        {
+            constexpr const auto mask = 0x000000000000003ULL;
+            constexpr const auto from = 0ULL;
+            constexpr const auto name = "scaling";
+
+            constexpr const auto none = 0U;
+            constexpr const auto two = 1U;
+            constexpr const auto four = 2U;
+            constexpr const auto eight = 3U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        // Reserved bit here 
+        //
+
+        namespace reg1
+        {
+            constexpr const auto mask = 0x0000000000000078ULL;
+            constexpr const auto from = 3ULL;
+            constexpr const auto name = "reg1";
+
+            constexpr const auto rax = 0U;
+            constexpr const auto rcx = 1U;
+            constexpr const auto rdx = 2U;
+            constexpr const auto rbx = 3U;
+            constexpr const auto rsp = 4U;
+            constexpr const auto rbp = 5U;
+            constexpr const auto rsi = 6U;
+            constexpr const auto rdi = 7U;
+            constexpr const auto r8 = 8U;
+            constexpr const auto r9 = 9U;
+            constexpr const auto r10 = 10U;
+            constexpr const auto r11 = 11U;
+            constexpr const auto r12 = 12U;
+            constexpr const auto r13 = 13U;
+            constexpr const auto r14 = 14U;
+            constexpr const auto r15 = 15U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace addr_size
+        {
+            constexpr const auto mask = 0x000000000000380ULL;
+            constexpr const auto from = 7ULL;
+            constexpr const auto name = "addr_size";
+
+            constexpr const auto sixteen = 0U;
+            constexpr const auto thirty_two = 1U;
+            constexpr const auto sixty_four = 2U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace operand_type
+        {
+            constexpr const auto mask = 0x0000000000000400ULL;
+            constexpr const auto from = 10ULL;
+            constexpr const auto name = "operand_type";
+
+            constexpr const auto mem = 0U;
+            constexpr const auto reg = 1U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace segment_register
+        {
+            constexpr const auto mask = 0x0000000000038000ULL;
+            constexpr const auto from = 15ULL;
+            constexpr const auto name = "segment_register";
+
+            constexpr const auto es = 0U;
+            constexpr const auto cs = 1U;
+            constexpr const auto ss = 2U;
+            constexpr const auto ds = 3U;
+            constexpr const auto fs = 4U;
+            constexpr const auto gs = 5U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace index_reg
+        {
+            constexpr const auto mask = 0x3c0000ULL;
+            constexpr const auto from = 18ULL;
+            constexpr const auto name = "index_reg";
+
+            constexpr const auto rax = 0U;
+            constexpr const auto rcx = 1U;
+            constexpr const auto rdx = 2U;
+            constexpr const auto rbx = 3U;
+            constexpr const auto rsp = 4U;
+            constexpr const auto rbp = 5U;
+            constexpr const auto rsi = 6U;
+            constexpr const auto rdi = 7U;
+            constexpr const auto r8 = 8U;
+            constexpr const auto r9 = 9U;
+            constexpr const auto r10 = 10U;
+            constexpr const auto r11 = 11U;
+            constexpr const auto r12 = 12U;
+            constexpr const auto r13 = 13U;
+            constexpr const auto r14 = 14U;
+            constexpr const auto r15 = 15U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace index_reg_valid
+        {
+            constexpr const auto mask = 0x400000ULL;
+            constexpr const auto from = 22ULL;
+            constexpr const auto name = "index_reg_valid";
+
+            constexpr const auto valid = 0U;
+            constexpr const auto invalid = 1U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace base_reg
+        {
+            constexpr const auto mask = 0x7800000ULL;
+            constexpr const auto from = 23ULL;
+            constexpr const auto name = "base_reg";
+
+            constexpr const auto rax = 0U;
+            constexpr const auto rcx = 1U;
+            constexpr const auto rdx = 2U;
+            constexpr const auto rbx = 3U;
+            constexpr const auto rsp = 4U;
+            constexpr const auto rbp = 5U;
+            constexpr const auto rsi = 6U;
+            constexpr const auto rdi = 7U;
+            constexpr const auto r8 = 8U;
+            constexpr const auto r9 = 9U;
+            constexpr const auto r10 = 10U;
+            constexpr const auto r11 = 11U;
+            constexpr const auto r12 = 12U;
+            constexpr const auto r13 = 13U;
+            constexpr const auto r14 = 14U;
+            constexpr const auto r15 = 15U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace base_reg_valid
+        {
+            constexpr const auto mask = 0x8000000ULL;
+            constexpr const auto from = 27ULL;
+            constexpr const auto name = "base_reg_valid";
+
+            constexpr const auto valid = 0U;
+            constexpr const auto invalid = 1U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+        namespace instruction_type
+        {
+            constexpr const auto mask = 0x30000000ULL;
+            constexpr const auto from = 28ULL;
+            constexpr const auto name = "instruction_type";
+
+            constexpr const auto sldt = 0U;
+            constexpr const auto str = 1U;
+            constexpr const auto lldt = 2U;
+            constexpr const auto ltr = 3U;
+
+            inline auto get()
+            { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
+
+            inline auto get(value_type field)
+            { return get_bits(field, mask) >> from; }
+
+            inline auto get_if_exists(bool verbose = false)
+            { return get_bits(get_vmcs_field_if_exists(addr, name, verbose, exists()), mask) >> from; }
+
+            inline void dump(int level, std::string *msg = nullptr)
+            { dump_vmcs_subnhex(level, msg); }
+        }
+
+ 
 
         inline void dump(int level, std::string *msg = nullptr)
         { dump_vmcs_nhex(level, msg); }
