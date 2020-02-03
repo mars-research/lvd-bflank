@@ -246,8 +246,17 @@ uint64_t dest_address(vcpu *vcpu) {
 
     if (vm_exit_instruction_information::sgdt::index_reg_invalid::is_enabled() &&
         vm_exit_instruction_information::sgdt::base_reg_invalid::is_enabled()) {
+        
+        bfdebug_subnhex(0, "RIP relative displacement", displacement);
         return displacement;
     }
+
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_subnhex(0, "base", base(vcpu), msg);
+        bfdebug_subnhex(0, "index", index(vcpu), msg);
+        bfdebug_subnhex(0, "scale", scale(vcpu), msg);
+        bfdebug_subnhex(0, "displacement", displacement, msg);
+    });
 
     return base(vcpu) + index(vcpu) * scale(vcpu) + displacement;            
 
@@ -328,17 +337,24 @@ descriptor_handler::handle(vcpu *vcpu)
 
     switch (instr_info::instruction_identity::get(ii)) {
         case instr_info::instruction_identity::sgdt:
+            bfdebug_subnhex(0, "sgdt at", vcpu->rip());
             handle_sgdt(vcpu);
             break;
     
         case instr_info::instruction_identity::sidt:
+
+            bfdebug_subnhex(0, "sidt at", vcpu->rip());
             handle_sidt(vcpu);
             break;
 
         case instr_info::instruction_identity::lgdt:
+            bfdebug_subnhex(0, "lgdt at", vcpu->rip());
+            handle_lgdt(vcpu);
             break;
 
         case instr_info::instruction_identity::lidt:
+            bfdebug_subnhex(0, "lidt at", vcpu->rip());
+            handle_lidt(vcpu);
             break;
 
         default:

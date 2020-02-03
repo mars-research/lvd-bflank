@@ -231,7 +231,7 @@ vcpu::vcpu(
     this->trap_on_all_io_instruction_accesses(); 
 
     /* Descriptor table exiting (LGDT, LIDT) */
-    //secondary_processor_based_vm_execution_controls::descriptor_table_exiting::enable(); 
+    secondary_processor_based_vm_execution_controls::descriptor_table_exiting::enable(); 
 
     /* 
      * - Stores to control registers
