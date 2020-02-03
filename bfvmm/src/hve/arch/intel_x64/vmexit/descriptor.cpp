@@ -44,6 +44,12 @@ descriptor_handler::descriptor_handler(
         exit_reason::basic_exit_reason::access_to_gdtr_or_idtr,
         ::handler_delegate_t::create<descriptor_handler, &descriptor_handler::handle>(this)
     );
+
+    vcpu->add_handler(
+        exit_reason::basic_exit_reason::access_to_ldtr_or_tr,
+        ::handler_delegate_t::create<descriptor_handler, &descriptor_handler::handle>(this)
+    );
+
 }
 
 // -----------------------------------------------------------------------------

@@ -2042,6 +2042,7 @@ private:
     sipi_signal_handler m_sipi_signal_handler;
     wrmsr_handler m_wrmsr_handler;
     xsetbv_handler m_xsetbv_handler;
+    descriptor_handler m_descriptor_handler; 
 
     ept_handler m_ept_handler;
     microcode_handler m_microcode_handler;

@@ -150,6 +150,7 @@ vcpu::vcpu(
     m_sipi_signal_handler{this},
     m_wrmsr_handler{this},
     m_xsetbv_handler{this},
+    m_descriptor_handler{this},
 
     m_ept_handler{this},
     m_microcode_handler{this},
