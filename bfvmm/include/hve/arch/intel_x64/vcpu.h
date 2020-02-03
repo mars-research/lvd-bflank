@@ -38,6 +38,7 @@
 #include "vmexit/preemption_timer.h"
 #include "vmexit/wrmsr.h"
 #include "vmexit/xsetbv.h"
+#include "vmexit/descriptor.h"
 
 #include "ept.h"
 #include "exit_handler.h"

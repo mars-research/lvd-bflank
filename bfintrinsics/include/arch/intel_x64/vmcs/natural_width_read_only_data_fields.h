@@ -566,8 +566,8 @@ namespace exit_qualification
             constexpr const auto name = "addr_size";
 
             constexpr const auto sixteen = 0U;
-            constexpr const auto thirtytwo = 1U;
-            constexpr const auto sixtyfour = 2U;
+            constexpr const auto thirty_two = 1U;
+            constexpr const auto sixty_four = 2U;
 
             inline auto get()
             { return get_bits(get_vmcs_field(addr, name, exists()), mask) >> from; }
