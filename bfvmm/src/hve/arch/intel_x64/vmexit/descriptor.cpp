@@ -42,12 +42,12 @@ descriptor_handler::descriptor_handler(
 
     vcpu->add_handler(
         exit_reason::basic_exit_reason::access_to_gdtr_or_idtr,
-        ::handler_delegate_t::create<descriptor_handler, &descriptor_handler::handle>(this)
+        ::handler_delegate_t::create<descriptor_handler, &descriptor_handler::handle_gdtr_idtr>(this)
     );
 
     vcpu->add_handler(
         exit_reason::basic_exit_reason::access_to_ldtr_or_tr,
-        ::handler_delegate_t::create<descriptor_handler, &descriptor_handler::handle>(this)
+        ::handler_delegate_t::create<descriptor_handler, &descriptor_handler::handle_ldtr_or_tr>(this)
     );
 
 }
@@ -333,7 +333,7 @@ bool handle_lgdt(vcpu *vcpu) {
 
 
 bool
-descriptor_handler::handle(vcpu *vcpu)
+descriptor_handler::handle_gdtr_or_idtr(vcpu *vcpu)
 {
 
     using namespace ::intel_x64::vmcs;
@@ -361,6 +361,75 @@ descriptor_handler::handle(vcpu *vcpu)
         case instr_info::instruction_identity::lidt:
             bfdebug_subnhex(0, "lidt at", vcpu->rip());
             handle_lidt(vcpu);
+            break;
+
+        default:
+
+            return false;
+    }
+
+    return vcpu->advance();
+}
+
+bool handle_lldt(vcpu *vcpu) {
+    using namespace ::intel_x64::vmcs;
+
+    namespace instr_info = vm_exit_instruction_information::lldt;
+
+    switch (instr_info::mem_reg::get()) {
+        case instr_info::mem_reg::reg:
+
+             return vcpu->rax(); 
+        case instr_info::mem_reg::mem:
+             
+             /*uint64_t address = dest_address(vcpu); 
+
+             auto map = vcpu->map_gva_4k<uint8_t>(address, 10);
+
+             uint64_t base = *((uint64_t*)&map.get()[2]); 
+             uint64_t limit = *((uint16_t*)&map.get()[0]);
+
+             vcpu->set_gdt_limit(limit);
+             vcpu->set_gdt_base(base);
+
+             */
+             return vcpu->rax(); 
+    };
+
+
+    return true;
+};
+
+
+bool
+descriptor_handler::handle_ldtr_or_tr(vcpu *vcpu)
+{
+
+    using namespace ::intel_x64::vmcs;
+
+    namespace instr_info = vm_exit_instruction_information::lldt;
+    auto ii = instr_info::get();
+
+    switch (instr_info::instruction_identity::get(ii)) {
+        case instr_info::instruction_identity::sldt:
+            bfdebug_subnhex(0, "sldt at", vcpu->rip());
+            handle_sldt(vcpu);
+            break;
+    
+        case instr_info::instruction_identity::str:
+
+            bfdebug_subnhex(0, "str at", vcpu->rip());
+            handle_str(vcpu);
+            break;
+
+        case instr_info::instruction_identity::lldt:
+            bfdebug_subnhex(0, "lldt at", vcpu->rip());
+            handle_lldt(vcpu);
+            break;
+
+        case instr_info::instruction_identity::ltr:
+            bfdebug_subnhex(0, "lidt at", vcpu->rip());
+            handle_ltr(vcpu);
             break;
 
         default:

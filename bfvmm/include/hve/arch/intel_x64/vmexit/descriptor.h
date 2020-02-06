@@ -138,7 +138,9 @@ public:
 
     /// @cond
 
-    bool handle(vcpu *vcpu);
+    bool handle_gdtr_or_idtr(vcpu *vcpu);
+
+    bool handle_ldtr_or_tr(vcpu *vcpu);
 
     /// @endcond
 
