@@ -42,7 +42,7 @@ descriptor_handler::descriptor_handler(
 
     vcpu->add_handler(
         exit_reason::basic_exit_reason::access_to_gdtr_or_idtr,
-        ::handler_delegate_t::create<descriptor_handler, &descriptor_handler::handle_gdtr_idtr>(this)
+        ::handler_delegate_t::create<descriptor_handler, &descriptor_handler::handle_gdtr_or_idtr>(this)
     );
 
     vcpu->add_handler(
@@ -436,52 +436,68 @@ uint64_t set_selector_into_reg(vcpu *vcpu, uint64_t sel) {
 
     switch (vm_exit_instruction_information::sldt::index_reg::get()) {
         case vm_exit_instruction_information::sldt::index_reg::rax: 
-             return vcpu->set_rax(sel); 
+             vcpu->set_rax(sel); 
+	     break;
 
         case vm_exit_instruction_information::sldt::index_reg::rcx: 
-             return vcpu->set_rcx(sel); 
+             vcpu->set_rcx(sel); 
+	     break;
 
         case vm_exit_instruction_information::sldt::index_reg::rdx: 
-             return vcpu->set_rdx(sel); 
+             vcpu->set_rdx(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::rbx: 
-             return vcpu->set_rbx(sel); 
+             vcpu->set_rbx(sel); 
+	     break;
 
         case vm_exit_instruction_information::sldt::index_reg::rsp: 
-             return vcpu->set_rsp(sel); 
+             vcpu->set_rsp(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::rbp: 
-             return vcpu->set_rbp(sel); 
+             vcpu->set_rbp(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::rsi: 
-             return vcpu->set_rsi(sel); 
+             vcpu->set_rsi(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::rdi: 
-             return vcpu->set_rdi(sel); 
+             vcpu->set_rdi(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::r8: 
-             return vcpu->set_r08(sel); 
+             vcpu->set_r08(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::r9: 
-             return vcpu->set_r09(sel); 
+             vcpu->set_r09(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::r10: 
-             return vcpu->set_r10(sel); 
+             vcpu->set_r10(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::r11: 
-             return vcpu->set_r11(sel); 
+             vcpu->set_r11(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::r12: 
-             return vcpu->set_r12(sel); 
+             vcpu->set_r12(sel); 
+	     break;
 
         case vm_exit_instruction_information::sldt::index_reg::r13: 
-             return vcpu->set_r13(sel); 
+             vcpu->set_r13(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::r14: 
-             return vcpu->set_r14(sel); 
+             vcpu->set_r14(sel); 
+	     break; 
 
         case vm_exit_instruction_information::sldt::index_reg::r15: 
-             return vcpu->set_r15(sel); 
+             vcpu->set_r15(sel); 
+	     break; 
 
         default:
              return 0;
@@ -541,6 +557,29 @@ bool handle_lldt(vcpu *vcpu) {
     vcpu->set_ldtr_selector(sel);
     return true;
 };
+
+bool handle_str(vcpu *vcpu) {
+    using namespace ::intel_x64::vmcs;
+
+    namespace instr_info = vm_exit_instruction_information::lldt;
+    uint64_t sel;
+
+    sel = vcpu->tr_selector();
+    
+    switch (instr_info::mem_reg::get()) {
+            case instr_info::mem_reg::reg:
+                    set_selector_into_reg(vcpu, sel); 
+                    break; 
+            case instr_info::mem_reg::mem:
+                    uint64_t address = dest_address(vcpu); 
+                    auto map = vcpu->map_gva_4k<uint16_t>(address, 1);
+                    map.get()[0] = sel; 
+                    break;   
+    };
+
+    return true;
+};
+
 
 bool handle_ltr(vcpu *vcpu) {
     using namespace ::intel_x64::vmcs;
