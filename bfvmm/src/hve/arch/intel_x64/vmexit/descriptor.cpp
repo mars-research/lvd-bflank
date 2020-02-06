@@ -330,8 +330,6 @@ bool handle_lgdt(vcpu *vcpu) {
     return true;
 };
 
-
-
 bool
 descriptor_handler::handle_gdtr_or_idtr(vcpu *vcpu)
 {
@@ -371,32 +369,195 @@ descriptor_handler::handle_gdtr_or_idtr(vcpu *vcpu)
     return vcpu->advance();
 }
 
+uint64_t get_selector_from_reg(vcpu *vcpu) {
+
+    using namespace ::intel_x64::vmcs;
+
+    switch (vm_exit_instruction_information::sldt::index_reg::get()) {
+        case vm_exit_instruction_information::sldt::index_reg::rax: 
+             return vcpu->rax(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rcx: 
+             return vcpu->rcx(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rdx: 
+             return vcpu->rdx(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rbx: 
+             return vcpu->rbx(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rsp: 
+             return vcpu->rsp(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rbp: 
+             return vcpu->rbp(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rsi: 
+             return vcpu->rsi(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rdi: 
+             return vcpu->rdi(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r8: 
+             return vcpu->r08(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r9: 
+             return vcpu->r09(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r10: 
+             return vcpu->r10(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r11: 
+             return vcpu->r11(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r12: 
+             return vcpu->r12(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r13: 
+             return vcpu->r13(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r14: 
+             return vcpu->r14(); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r15: 
+             return vcpu->r15(); 
+
+        default:
+             return 0;
+    };
+
+    return 0; 
+
+};
+
+uint64_t set_selector_into_reg(vcpu *vcpu, uint64_t sel) {
+
+    using namespace ::intel_x64::vmcs;
+
+    switch (vm_exit_instruction_information::sldt::index_reg::get()) {
+        case vm_exit_instruction_information::sldt::index_reg::rax: 
+             return vcpu->set_rax(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rcx: 
+             return vcpu->set_rcx(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rdx: 
+             return vcpu->set_rdx(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rbx: 
+             return vcpu->set_rbx(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rsp: 
+             return vcpu->set_rsp(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rbp: 
+             return vcpu->set_rbp(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rsi: 
+             return vcpu->set_rsi(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::rdi: 
+             return vcpu->set_rdi(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r8: 
+             return vcpu->set_r08(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r9: 
+             return vcpu->set_r09(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r10: 
+             return vcpu->set_r10(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r11: 
+             return vcpu->set_r11(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r12: 
+             return vcpu->set_r12(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r13: 
+             return vcpu->set_r13(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r14: 
+             return vcpu->set_r14(sel); 
+
+        case vm_exit_instruction_information::sldt::index_reg::r15: 
+             return vcpu->set_r15(sel); 
+
+        default:
+             return 0;
+    };
+
+    return 0; 
+
+};
+
+
+uint64_t get_selector_from_mem(vcpu *vcpu) {
+    uint64_t address = dest_address(vcpu); 
+    auto map = vcpu->map_gva_4k<uint16_t>(address, 1);
+
+    uint64_t sel = map.get()[0];
+    return sel; 
+};
+
+bool handle_sldt(vcpu *vcpu) {
+    using namespace ::intel_x64::vmcs;
+
+    namespace instr_info = vm_exit_instruction_information::lldt;
+    uint64_t sel;
+
+    sel = vcpu->ldtr_selector();
+    
+    switch (instr_info::mem_reg::get()) {
+            case instr_info::mem_reg::reg:
+                    set_selector_into_reg(vcpu, sel); 
+                    break; 
+            case instr_info::mem_reg::mem:
+                    uint64_t address = dest_address(vcpu); 
+                    auto map = vcpu->map_gva_4k<uint16_t>(address, 1);
+                    map.get()[0] = sel; 
+                    break;   
+    };
+
+    return true;
+};
+
+
 bool handle_lldt(vcpu *vcpu) {
     using namespace ::intel_x64::vmcs;
 
     namespace instr_info = vm_exit_instruction_information::lldt;
+    uint64_t sel;
 
     switch (instr_info::mem_reg::get()) {
-        case instr_info::mem_reg::reg:
-
-             return vcpu->rax(); 
-        case instr_info::mem_reg::mem:
-             
-             /*uint64_t address = dest_address(vcpu); 
-
-             auto map = vcpu->map_gva_4k<uint8_t>(address, 10);
-
-             uint64_t base = *((uint64_t*)&map.get()[2]); 
-             uint64_t limit = *((uint16_t*)&map.get()[0]);
-
-             vcpu->set_gdt_limit(limit);
-             vcpu->set_gdt_base(base);
-
-             */
-             return vcpu->rax(); 
+            case instr_info::mem_reg::reg:
+                    sel = get_selector_from_reg(vcpu); 
+                    break; 
+            case instr_info::mem_reg::mem:
+                    sel = get_selector_from_mem(vcpu); 
+                    break;   
     };
 
+    vcpu->set_ldtr_selector(sel);
+    return true;
+};
 
+bool handle_ltr(vcpu *vcpu) {
+    using namespace ::intel_x64::vmcs;
+
+    namespace instr_info = vm_exit_instruction_information::lldt;
+    uint64_t sel;
+
+    switch (instr_info::mem_reg::get()) {
+            case instr_info::mem_reg::reg:
+                    sel = get_selector_from_reg(vcpu); 
+                    break; 
+            case instr_info::mem_reg::mem:
+                    sel = get_selector_from_mem(vcpu); 
+                    break;   
+    };
+
+    vcpu->set_tr_selector(sel);
     return true;
 };
 
