@@ -39,6 +39,7 @@
 #include "vmexit/wrmsr.h"
 #include "vmexit/xsetbv.h"
 #include "vmexit/descriptor.h"
+#include "vmexit/xsave.h"
 
 #include "ept.h"
 #include "exit_handler.h"
@@ -2043,6 +2044,7 @@ private:
     wrmsr_handler m_wrmsr_handler;
     xsetbv_handler m_xsetbv_handler;
     descriptor_handler m_descriptor_handler; 
+    xsave_handler m_xsave_handler; 
 
     ept_handler m_ept_handler;
     microcode_handler m_microcode_handler;

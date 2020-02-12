@@ -38,6 +38,7 @@ if(${BUILD_TARGET_ARCH} STREQUAL "x86_64")
         arch/intel_x64/vmexit/wrmsr.cpp
         arch/intel_x64/vmexit/xsetbv.cpp
         arch/intel_x64/vmexit/descriptor.cpp
+        arch/intel_x64/vmexit/xsave.cpp
         arch/intel_x64/check_vmcs_control_fields.cpp
         arch/intel_x64/check_vmcs_guest_fields.cpp
         arch/intel_x64/check_vmcs_host_fields.cpp

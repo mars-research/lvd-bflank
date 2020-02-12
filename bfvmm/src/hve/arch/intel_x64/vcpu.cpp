@@ -151,6 +151,7 @@ vcpu::vcpu(
     m_wrmsr_handler{this},
     m_xsetbv_handler{this},
     m_descriptor_handler{this},
+    m_xsave_handler{this},
 
     m_ept_handler{this},
     m_microcode_handler{this},
@@ -234,16 +235,28 @@ vcpu::vcpu(
     /* Descriptor table exiting (LGDT, LIDT) */
     secondary_processor_based_vm_execution_controls::descriptor_table_exiting::enable(); 
 
+    /* xsave/xrstor 
+     * 
+     * set the bitmap to all 1s 24.6.19 XSS-Exiting Bitmap and 
+     * 25.1.3 Instructions That Cause VM Exits Conditionally 
+     * 
+     * XSAVES. The XSAVES instruction causes a VM exit if the “enable XSAVES/XRSTORS” VM-execution control is
+     * 1 and any bit is set in the logical-AND of the following three values: EDX:EAX, the IA32_XSS MSR, and the XSS-
+     * exiting bitmap (see Section 24.6.19).
+     * */
+
+    xss_exiting_bitmap::set(~0ULL); 
+
     /* 
      * - Stores to control registers
      *   -- cr0, cr3, cr4
      * - MSRs
      * - I/O ports
      * - store to extra control register (xcr0) / xsetbv
+     * - store GDT, IDT
      * 
      * ToDo: 
      * - debug registers (mov-DR)
-     * - store GDT, IDT
      * - xrstor
      */
 
