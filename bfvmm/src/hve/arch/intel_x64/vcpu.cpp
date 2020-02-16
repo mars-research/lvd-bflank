@@ -1017,6 +1017,7 @@ struct ring_trace_entry {
 	unsigned type;
 	unsigned orig_type;
 	unsigned long long ts;
+	unsigned long long mapped_cr3;
 	char name[PROC_NAME_MAX];
 };
 
@@ -1127,6 +1128,7 @@ void vcpu::dump_ring_trace_buffer(struct ring_trace_buffer *trace_buf)
 #endif
         sprintf(buf, "type:%16s(%x) cpu: %lu [%c|%c|%c] comm: %s pid: %d rip: %16lx rsp: %16lx "
                 "rdi: %09lx gsbase: %16lx lcd_stack: %16lx[bmap: %x nc:%u] "
+		"mapped_cr3: %llx "
                 "eflags: %08lx [IF: %d]\n",
                 event_type_to_string(entry->type),
                 entry->type,
@@ -1136,7 +1138,9 @@ void vcpu::dump_ring_trace_buffer(struct ring_trace_buffer *trace_buf)
                 entry->context & (IN_IRQ) ? 'I' : '-',
                 entry->name, entry->pid, entry->rip,
                 entry->rsp, entry->rdi, entry->gsbase, entry->lcd_stack,
-                entry->lcd_stack_bit, entry->lcd_nc, entry->eflags,
+                entry->lcd_stack_bit, entry->lcd_nc,
+		entry->mapped_cr3,
+		entry->eflags,
                 !!(entry->eflags & IF_FLAG));
             bfdebug_info(0, buf, msg);
         });
