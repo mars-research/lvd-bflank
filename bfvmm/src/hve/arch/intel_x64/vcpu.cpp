@@ -999,6 +999,7 @@ vcpu::dump_ept_pointers() {
 #define EVENT_DO_INT3_LEAVE             17
 #define EVENT_NMI_LEAVE                 18
 #define EVENT_NMI_FULL                  19
+#define EVENT_CTX_SWITCH		20
 
 
 
@@ -1015,6 +1016,7 @@ struct ring_trace_entry {
 	unsigned short pid;
 	unsigned type;
 	unsigned orig_type;
+	unsigned long long ts;
 	char name[PROC_NAME_MAX];
 };
 
@@ -1089,6 +1091,9 @@ static const char *event_type_to_string(unsigned type)
 
         case EVENT_NMI_FULL:
             return "EVENT_NMI_FULL";
+
+	case EVENT_CTX_SWITCH:
+	    return "EVENT_CTX_SWITCH";
 
         default:
             return "Undefined item";
