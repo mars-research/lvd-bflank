@@ -245,7 +245,22 @@ vcpu::vcpu(
      * exiting bitmap (see Section 24.6.19).
      * */
 
-    xss_exiting_bitmap::set(~0ULL); 
+    //::intel_x64::vmcs::secondary_processor_based_vm_execution_controls::enable_xsaves_xrstors::enable_if_allowed();
+
+    bfdebug_transaction(1, [&](std::string * msg) {
+        bfdebug_subnhex(1, "msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1()", 
+                        ::intel_x64::msrs::ia32_vmx_true_procbased_ctls::activate_secondary_controls::is_allowed1(), msg);
+        bfdebug_subnhex(1, "msrs::ia32_vmx_procbased_ctls2::enable_xsaves_xrstors::is_allowed1()", 
+                        ::intel_x64::msrs::ia32_vmx_procbased_ctls2::enable_xsaves_xrstors::is_allowed1(), msg);
+        bfdebug_subnhex(1, "msrs::ia32_vmx_procbased_ctls2::enable_xsaves_xrstors::is_allowed0()", 
+                        ::intel_x64::msrs::ia32_vmx_procbased_ctls2::enable_xsaves_xrstors::is_allowed0(), msg);
+
+
+    });
+
+    //::intel_x64::vmcs::xss_exiting_bitmap::dump(1);
+
+   // ::intel_x64::vmcs::xss_exiting_bitmap::set(~0ULL); 
 
     /* 
      * - Stores to control registers

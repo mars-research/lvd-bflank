@@ -341,23 +341,23 @@ descriptor_handler::handle_gdtr_or_idtr(vcpu *vcpu)
 
     switch (instr_info::instruction_identity::get(ii)) {
         case instr_info::instruction_identity::sgdt:
-            bfdebug_subnhex(0, "sgdt at", vcpu->rip());
+            //bfdebug_subnhex(0, "sgdt at", vcpu->rip());
             handle_sgdt(vcpu);
             break;
     
         case instr_info::instruction_identity::sidt:
 
-            bfdebug_subnhex(0, "sidt at", vcpu->rip());
+            //bfdebug_subnhex(0, "sidt at", vcpu->rip());
             handle_sidt(vcpu);
             break;
 
         case instr_info::instruction_identity::lgdt:
-            bfdebug_subnhex(0, "lgdt at", vcpu->rip());
+            //bfdebug_subnhex(0, "lgdt at", vcpu->rip());
             handle_lgdt(vcpu);
             break;
 
         case instr_info::instruction_identity::lidt:
-            bfdebug_subnhex(0, "lidt at", vcpu->rip());
+            //bfdebug_subnhex(0, "lidt at", vcpu->rip());
             handle_lidt(vcpu);
             break;
 
@@ -612,23 +612,23 @@ descriptor_handler::handle_ldtr_or_tr(vcpu *vcpu)
 
     switch (instr_info::instruction_identity::get(ii)) {
         case instr_info::instruction_identity::sldt:
-            bfdebug_subnhex(0, "sldt at", vcpu->rip());
+            //bfdebug_subnhex(0, "sldt at", vcpu->rip());
             handle_sldt(vcpu);
             break;
     
         case instr_info::instruction_identity::str:
 
-            bfdebug_subnhex(0, "str at", vcpu->rip());
+            //bfdebug_subnhex(0, "str at", vcpu->rip());
             handle_str(vcpu);
             break;
 
         case instr_info::instruction_identity::lldt:
-            bfdebug_subnhex(0, "lldt at", vcpu->rip());
+            //bfdebug_subnhex(0, "lldt at", vcpu->rip());
             handle_lldt(vcpu);
             break;
 
         case instr_info::instruction_identity::ltr:
-            bfdebug_subnhex(0, "lidt at", vcpu->rip());
+            //bfdebug_subnhex(0, "lidt at", vcpu->rip());
             handle_ltr(vcpu);
             break;
 
