@@ -94,59 +94,76 @@ uint64_t base(vcpu *vcpu) {
         return 0;
     }
 
-    switch (vm_exit_instruction_information::sgdt::index_reg::get()) {
-        case vm_exit_instruction_information::sgdt::index_reg::rax: 
+    switch (vm_exit_instruction_information::sgdt::base_reg::get()) {
+        case vm_exit_instruction_information::sgdt::base_reg::rax:
+             bfdebug_subnhex(0, "base rax", vcpu->rax());
              return vcpu->rax(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::rcx: 
+        case vm_exit_instruction_information::sgdt::base_reg::rcx:
+             bfdebug_subnhex(0, "base rcx", vcpu->rcx());
              return vcpu->rcx(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::rdx: 
+        case vm_exit_instruction_information::sgdt::base_reg::rdx: 
+             bfdebug_subnhex(0, "base rdx", vcpu->rdx());
              return vcpu->rdx(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::rbx: 
+        case vm_exit_instruction_information::sgdt::base_reg::rbx: 
+             bfdebug_subnhex(0, "base rbx", vcpu->rbx());
              return vcpu->rbx(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::rsp: 
+        case vm_exit_instruction_information::sgdt::base_reg::rsp: 
+             bfdebug_subnhex(0, "base rsp", vcpu->rsp());
              return vcpu->rsp(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::rbp: 
+        case vm_exit_instruction_information::sgdt::base_reg::rbp: 
+             bfdebug_subnhex(0, "base rbp", vcpu->rbp());
              return vcpu->rbp(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::rsi: 
+        case vm_exit_instruction_information::sgdt::base_reg::rsi: 
+             bfdebug_subnhex(0, "base rsi", vcpu->rsi());
              return vcpu->rsi(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::rdi: 
+        case vm_exit_instruction_information::sgdt::base_reg::rdi: 
+             bfdebug_subnhex(0, "base rdi", vcpu->rdi());
              return vcpu->rdi(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::r8: 
+        case vm_exit_instruction_information::sgdt::base_reg::r8: 
+             bfdebug_subnhex(0, "base r08", vcpu->r08());
              return vcpu->r08(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::r9: 
+        case vm_exit_instruction_information::sgdt::base_reg::r9:
+             bfdebug_subnhex(0, "base r09", vcpu->r09());
              return vcpu->r09(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::r10: 
+        case vm_exit_instruction_information::sgdt::base_reg::r10: 
+             bfdebug_subnhex(0, "base r10", vcpu->r10());
              return vcpu->r10(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::r11: 
+        case vm_exit_instruction_information::sgdt::base_reg::r11: 
+             bfdebug_subnhex(0, "base r11", vcpu->r11());
              return vcpu->r11(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::r12: 
+        case vm_exit_instruction_information::sgdt::base_reg::r12: 
+             bfdebug_subnhex(0, "base r12", vcpu->r12());
              return vcpu->r12(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::r13: 
+        case vm_exit_instruction_information::sgdt::base_reg::r13: 
+             bfdebug_subnhex(0, "base r13", vcpu->r13());
              return vcpu->r13(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::r14: 
+        case vm_exit_instruction_information::sgdt::base_reg::r14: 
+             bfdebug_subnhex(0, "base r14", vcpu->r14());
              return vcpu->r14(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::r15: 
+        case vm_exit_instruction_information::sgdt::base_reg::r15: 
+             bfdebug_subnhex(0, "base r15", vcpu->r15());
              return vcpu->r15(); 
 
         default:
              return 0;
     };
 
+  
     return 0; 
 
 
@@ -161,52 +178,68 @@ uint64_t index(vcpu *vcpu) {
     }
 
     switch (vm_exit_instruction_information::sgdt::index_reg::get()) {
-        case vm_exit_instruction_information::sgdt::index_reg::rax: 
+        case vm_exit_instruction_information::sgdt::index_reg::rax:
+             bfdebug_subnhex(0, "index rax", vcpu->rax());
              return vcpu->rax(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::rcx: 
+        case vm_exit_instruction_information::sgdt::index_reg::rcx:
+             bfdebug_subnhex(0, "index rcx", vcpu->rcx());
              return vcpu->rcx(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::rdx: 
+             bfdebug_subnhex(0, "index rdx", vcpu->rdx());
              return vcpu->rdx(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::rbx: 
+             bfdebug_subnhex(0, "index rbx", vcpu->rbx());
              return vcpu->rbx(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::rsp: 
+             bfdebug_subnhex(0, "index rsp", vcpu->rsp());
              return vcpu->rsp(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::rbp: 
+             bfdebug_subnhex(0, "index rbp", vcpu->rbp());
              return vcpu->rbp(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::rsi: 
+             bfdebug_subnhex(0, "index rsi", vcpu->rsi());
              return vcpu->rsi(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::rdi: 
+             bfdebug_subnhex(0, "index rdi", vcpu->rdi());
              return vcpu->rdi(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::r8: 
+             bfdebug_subnhex(0, "index r08", vcpu->r08());
              return vcpu->r08(); 
 
-        case vm_exit_instruction_information::sgdt::index_reg::r9: 
+        case vm_exit_instruction_information::sgdt::index_reg::r9:
+             bfdebug_subnhex(0, "index r09", vcpu->r09());
              return vcpu->r09(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::r10: 
+             bfdebug_subnhex(0, "index r10", vcpu->r10());
              return vcpu->r10(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::r11: 
+             bfdebug_subnhex(0, "index r11", vcpu->r11());
              return vcpu->r11(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::r12: 
+             bfdebug_subnhex(0, "index r12", vcpu->r12());
              return vcpu->r12(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::r13: 
+             bfdebug_subnhex(0, "index r13", vcpu->r13());
              return vcpu->r13(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::r14: 
+             bfdebug_subnhex(0, "index r14", vcpu->r14());
              return vcpu->r14(); 
 
         case vm_exit_instruction_information::sgdt::index_reg::r15: 
+             bfdebug_subnhex(0, "index r15", vcpu->r15());
              return vcpu->r15(); 
 
         default:
@@ -272,12 +305,17 @@ uint64_t dest_address(vcpu *vcpu) {
 
 bool handle_sidt(vcpu *vcpu) {
 
-    uint64_t address = dest_address(vcpu); 
+    uint64_t address = dest_address(vcpu);
+    
+    bfdebug_subnhex(0, "destination address", address);
     
     auto map = vcpu->map_gva_4k<uint8_t>(address, 10);
 
     uint64_t base = vcpu->idt_base(); 
     uint64_t limit = vcpu->idt_limit();     
+
+    bfdebug_subnhex(0, "base", base);
+    bfdebug_subnhex(0, "limit", limit);
 
     *((uint16_t*)&map.get()[0]) = (uint16_t) limit; 
     *((uint64_t*)&map.get()[2]) = base; 
