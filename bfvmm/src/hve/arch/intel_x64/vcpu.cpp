@@ -160,7 +160,8 @@ vcpu::vcpu(
 #ifdef BF_COUNT_EXTIS
     ,
     m_exits_total{0},
-    m_hashtable{this}
+    m_rdmsr_hashtable{this},
+    m_wrmsr_hashtable{this}
 #endif
 
 {

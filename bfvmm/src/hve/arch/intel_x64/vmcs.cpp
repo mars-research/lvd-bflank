@@ -294,7 +294,14 @@ vcpu::dump_perf_counters(void)
     vmcs_n::cr0_read_shadow::dump(0); 
     vmcs_n::cr4_guest_host_mask::dump(0);
     vmcs_n::cr4_read_shadow::dump(0); 
-    m_hashtable.dump();
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_info(0, "Dumping rdmsr hashmap", msg);
+    });
+    m_rdmsr_hashtable.dump();
+    bfdebug_transaction(0, [&](std::string * msg) {
+        bfdebug_info(0, "Dumping wrmsr hashmap", msg);
+    });
+    m_wrmsr_hashtable.dump();
 #else
    bfdebug_info(0, "VM exit counting is not supported (recompile with BF_COUNT_EXTIS)"); 
 #endif

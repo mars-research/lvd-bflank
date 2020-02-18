@@ -2057,7 +2057,8 @@ public:
 #ifdef BF_COUNT_EXTIS
     uint64_t m_exits_total;
     uint64_t m_exits[MAX_EXIT_REASONS];
-    hashtable m_hashtable;
+    hashtable m_wrmsr_hashtable;
+    hashtable m_rdmsr_hashtable;
 #endif
 };
 

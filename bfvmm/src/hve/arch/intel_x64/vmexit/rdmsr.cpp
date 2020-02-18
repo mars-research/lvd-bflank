@@ -199,6 +199,7 @@ rdmsr_handler::handle(vcpu *vcpu)
     vcpu->set_rax(((info.val >> 0x00) & 0x00000000FFFFFFFF));
     vcpu->set_rdx(((info.val >> 0x20) & 0x00000000FFFFFFFF));
 
+    vcpu->m_rdmsr_hashtable.insert(info.msr);
     return vcpu->advance();
 }
 
